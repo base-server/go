@@ -15,6 +15,14 @@ go get -u github.com/heaven-chp/base-server-go
  - example of use
    - socketServerConfig of socket_server/main.go
 
+## How to use grpc server
+ - install
+   - go install github.com/heaven-chp/base-server-go/grpc_server
+ - run
+   - ./bin/grpc_server -config_file src/github.com/heaven-chp/base-server-go/config/grpc_server.config
+ - log
+   - ./log/grpc_server_YYYYMMDD.log
+
 ## How to use socket server
  - install
    - go install github.com/heaven-chp/base-server-go/socket_server

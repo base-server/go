@@ -5,6 +5,31 @@ import (
 	"testing"
 )
 
+func TestGrpcServer(t *testing.T) {
+	var grpcServer GrpcServer
+
+	err := json.ToStructFromFile("./grpc_server.config", &grpcServer)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if grpcServer.LogLevel != "DEBUG" {
+		t.Errorf("invalid data - LogLevel : (%s)", grpcServer.LogLevel)
+	}
+
+	if grpcServer.LogOutputPath != "./log/" {
+		t.Errorf("invalid data - LogOutputPath : (%s)", grpcServer.LogOutputPath)
+	}
+
+	if grpcServer.LogFileNamePrefix != "grpc_server" {
+		t.Errorf("invalid data - LogFileNamePrefix : (%s)", grpcServer.LogFileNamePrefix)
+	}
+
+	if grpcServer.Address != "127.0.0.1:50051" {
+		t.Errorf("invalid data - Address : (%s)", grpcServer.Address)
+	}
+}
+
 func TestSocketServer(t *testing.T) {
 	var socketServer SocketServer
 
