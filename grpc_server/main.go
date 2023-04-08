@@ -3,14 +3,15 @@ package main
 import (
 	"errors"
 	"flag"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/heaven-chp/base-server-go/config"
 	"github.com/heaven-chp/common-library-go/grpc"
 	"github.com/heaven-chp/common-library-go/grpc/sample"
 	"github.com/heaven-chp/common-library-go/json"
 	"github.com/heaven-chp/common-library-go/log"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 type Main struct {
