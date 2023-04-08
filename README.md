@@ -6,7 +6,7 @@
  - struct add
    - see [config/config.go](https://github.com/heaven-chp/base-server-go/blob/main/config/config.go)
  - test add
-   - seei [config_test.go](https://github.com/heaven-chp/base-server-go/blob/main/config/config_test.go)
+   - see [config_test.go](https://github.com/heaven-chp/base-server-go/blob/main/config/config_test.go)
  - example of use
    - socketServerConfig of [socket_server/main.go](https://github.com/heaven-chp/base-server-go/blob/main/socket_server/main.go)
 
