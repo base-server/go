@@ -1,32 +1,27 @@
 # base-server-go
 
-## Installation
-```
-go get -u github.com/heaven-chp/base-server-go
-```
-
 ## How to add config
  - json type config file add
-   - see config/socket_server.config 
- - test add
-   - see config_test.go
+   - see [config/socket_server.config](https://github.com/heaven-chp/base-server-go/blob/main/config/socket_server.config)
  - struct add
-   - see config/config.go
+   - see [config/config.go](https://github.com/heaven-chp/base-server-go/blob/main/config/config.go)
+ - test add
+   - seei [config_test.go](https://github.com/heaven-chp/base-server-go/blob/main/config/config_test.go)
  - example of use
-   - socketServerConfig of socket_server/main.go
+   - socketServerConfig of [socket_server/main.go](https://github.com/heaven-chp/base-server-go/blob/main/socket_server/main.go)
 
 ## How to use grpc server
- - install
-   - go install github.com/heaven-chp/base-server-go/grpc_server
+ - build
+   - `go build -o grpc_server ./grpc_server/`
  - run
-   - ./bin/grpc_server -config_file src/github.com/heaven-chp/base-server-go/config/grpc_server.config
+   - `./grpc_server/grpc_server -config_file config/grpc_server.config`
  - log
-   - ./log/grpc_server_YYYYMMDD.log
+   - `./log/grpc_server_YYYYMMDD.log`
 
 ## How to use socket server
- - install
-   - go install github.com/heaven-chp/base-server-go/socket_server
+ - build
+   - `go build -o socket_server ./socket_server/`
  - run
-   - ./bin/socket_server -config_file src/github.com/heaven-chp/base-server-go/config/socket_server.config
+   - `./socket_server/socket_server -config_file config/socket_server.config`
  - log
-   - ./log/socket_server_YYYYMMDD.log 
+   - `./log/socket_server_YYYYMMDD.log`
