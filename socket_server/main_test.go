@@ -36,25 +36,26 @@ func TestMain2(t *testing.T) {
 }
 
 func TestMain3(t *testing.T) {
-	var condition atomic.Bool
-	condition.Store(false)
-
 	path, err := os.Getwd()
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	configFile := path + "/../config/socket_server.config"
 
+	sleep := atomic.Bool{}
+	sleep.Store(true)
+	condition := atomic.Bool{}
+	condition.Store(false)
 	go func() {
 		os.Args = []string{"test", "-config_file=" + configFile}
 		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
+		sleep.Store(false)
 		condition.Store(true)
 		main()
 		condition.Store(false)
 	}()
-	for condition.Load() == false {
+	for sleep.Load() {
 		time.Sleep(100 * time.Millisecond)
 	}
 
