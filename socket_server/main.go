@@ -85,7 +85,7 @@ func (main *Main) finalizeLog() error {
 }
 
 func (main *Main) initializeServer() error {
-	jobFunc := func(client socket.Client) {
+	serverJob := func(client socket.Client) {
 		client.Write("greeting")
 
 		readData, err := client.Read(1024)
@@ -109,23 +109,23 @@ func (main *Main) initializeServer() error {
 		log.Debug("write data - data : (%s)", writeData)
 	}
 
-	err := main.server.Initialize("tcp", main.socketServerConfig.Address, main.socketServerConfig.ClientPoolSize, jobFunc)
-	if err != nil {
-		return err
-	}
+	go func() {
+		err := main.server.Start("tcp", main.socketServerConfig.Address, main.socketServerConfig.ClientPoolSize, serverJob)
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	return nil
 }
 
 func (main *Main) finalizeServer() error {
-	return main.server.Finalize()
+	return main.server.Stop()
 }
 
 func (main *Main) Run() {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
-
-	go main.server.Run()
 
 	log.Info("signal : (%s)", <-signals)
 }
