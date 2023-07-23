@@ -3,8 +3,9 @@ package config
 import "github.com/heaven-chp/common-library-go/json"
 
 type Sample struct {
-	Field1 int    `json:"field1"`
-	Field2 string `json:"field2"`
+	LogLevel          string `json:"log_level"`
+	LogOutputPath     string `json:"log_output_path"`
+	LogFileNamePrefix string `json:"log_file_name_prefix"`
 }
 
 func (this *Sample) parsing(from interface{}) error {

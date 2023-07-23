@@ -7,7 +7,7 @@ import (
 )
 
 func TestGrpcServer(t *testing.T) {
-	var grpcServerConfig config.GrpcServer
+	grpcServerConfig := config.GrpcServer{}
 
 	err := config.Parsing(&grpcServerConfig, "./GrpcServer.config")
 	if err != nil {

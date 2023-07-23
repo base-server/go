@@ -7,7 +7,7 @@ import (
 )
 
 func TestSocketServer(t *testing.T) {
-	var socketServerConfig config.SocketServer
+	socketServerConfig := config.SocketServer{}
 
 	err := config.Parsing(&socketServerConfig, "./SocketServer.config")
 	if err != nil {

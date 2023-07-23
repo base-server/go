@@ -14,11 +14,15 @@ func TestSample(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if sampleConfig.Field1 != 1 {
-		t.Errorf("invalid field1 value - (%d)", sampleConfig.Field1)
+	if sampleConfig.LogLevel != "DEBUG" {
+		t.Errorf("invalid data - LogLevel : (%s)", sampleConfig.LogLevel)
 	}
 
-	if sampleConfig.Field2 != "value2" {
-		t.Errorf("invalid field2 value - (%s)", sampleConfig.Field2)
+	if sampleConfig.LogOutputPath != "./log/" {
+		t.Errorf("invalid data - LogOutputPath : (%s)", sampleConfig.LogOutputPath)
+	}
+
+	if sampleConfig.LogFileNamePrefix != "sample" {
+		t.Errorf("invalid data - LogFileNamePrefix : (%s)", sampleConfig.LogFileNamePrefix)
 	}
 }
