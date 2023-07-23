@@ -2,11 +2,11 @@
 
 ## How to add config
  - json type config file add
-   - see [config/socket_server.config](https://github.com/heaven-chp/base-server-go/blob/main/config/socket_server.config)
+   - see [config/Sample.config](https://github.com/heaven-chp/base-server-go/blob/main/config/Sample.config)
  - struct add
-   - see [config/config.go](https://github.com/heaven-chp/base-server-go/blob/main/config/config.go)
+   - see [config/Sample.go](https://github.com/heaven-chp/base-server-go/blob/main/config/Sample.go)
  - test add
-   - see [config_test.go](https://github.com/heaven-chp/base-server-go/blob/main/config/config_test.go)
+   - see [config_test.go](https://github.com/heaven-chp/base-server-go/blob/main/config/Sample_test.go)
  - example of use
    - socketServerConfig of [socket_server/main.go](https://github.com/heaven-chp/base-server-go/blob/main/socket_server/main.go)
 
