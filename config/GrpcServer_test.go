@@ -22,7 +22,7 @@ func TestGrpcServer(t *testing.T) {
 		t.Errorf("invalid data - LogOutputPath : (%s)", grpcServerConfig.LogOutputPath)
 	}
 
-	if grpcServerConfig.LogFileNamePrefix != "grpc_server" {
+	if grpcServerConfig.LogFileNamePrefix != "grpc-server" {
 		t.Errorf("invalid data - LogFileNamePrefix : (%s)", grpcServerConfig.LogFileNamePrefix)
 	}
 

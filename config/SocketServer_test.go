@@ -22,7 +22,7 @@ func TestSocketServer(t *testing.T) {
 		t.Errorf("invalid data - LogOutputPath : (%s)", socketServerConfig.LogOutputPath)
 	}
 
-	if socketServerConfig.LogFileNamePrefix != "socket_server" {
+	if socketServerConfig.LogFileNamePrefix != "socket-server" {
 		t.Errorf("invalid data - LogFileNamePrefix : (%s)", socketServerConfig.LogFileNamePrefix)
 	}
 
