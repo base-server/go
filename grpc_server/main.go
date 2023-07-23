@@ -10,7 +10,6 @@ import (
 	"github.com/heaven-chp/base-server-go/config"
 	"github.com/heaven-chp/common-library-go/grpc"
 	"github.com/heaven-chp/common-library-go/grpc/sample"
-	"github.com/heaven-chp/common-library-go/json"
 	"github.com/heaven-chp/common-library-go/log"
 )
 
@@ -67,7 +66,7 @@ func (this *Main) initializeFlag() error {
 }
 
 func (this *Main) initializeConfig() error {
-	return json.ToStructFromFile(this.configFile, &this.grpcServerConfig)
+	return config.Parsing(&this.grpcServerConfig, this.configFile)
 }
 
 func (this *Main) initializeLog() error {

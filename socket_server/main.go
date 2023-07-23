@@ -8,7 +8,6 @@ import (
 	"syscall"
 
 	"github.com/heaven-chp/base-server-go/config"
-	"github.com/heaven-chp/common-library-go/json"
 	"github.com/heaven-chp/common-library-go/log"
 	"github.com/heaven-chp/common-library-go/socket"
 )
@@ -66,7 +65,7 @@ func (this *Main) initializeFlag() error {
 }
 
 func (this *Main) initializeConfig() error {
-	return json.ToStructFromFile(this.configFile, &this.socketServerConfig)
+	return config.Parsing(&this.socketServerConfig, this.configFile)
 }
 
 func (this *Main) initializeLog() error {

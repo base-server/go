@@ -42,7 +42,7 @@ func TestMain3(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	configFile := path + "/../config/grpc_server.config"
+	configFile := path + "/../config/GrpcServer.config"
 
 	sleep := atomic.Bool{}
 	sleep.Store(true)

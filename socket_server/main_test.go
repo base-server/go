@@ -40,7 +40,7 @@ func TestMain3(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	configFile := path + "/../config/socket_server.config"
+	configFile := path + "/../config/SocketServer.config"
 
 	sleep := atomic.Bool{}
 	sleep.Store(true)
