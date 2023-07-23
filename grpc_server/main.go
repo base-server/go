@@ -22,23 +22,23 @@ type Main struct {
 	server grpc.Server
 }
 
-func (main *Main) Initialize() error {
-	err := main.initializeFlag()
+func (this *Main) Initialize() error {
+	err := this.initializeFlag()
 	if err != nil {
 		return err
 	}
 
-	err = main.initializeConfig()
+	err = this.initializeConfig()
 	if err != nil {
 		return err
 	}
 
-	err = main.initializeLog()
+	err = this.initializeLog()
 	if err != nil {
 		return err
 	}
 
-	err = main.initializeServer()
+	err = this.initializeServer()
 	if err != nil {
 		return err
 	}
@@ -46,13 +46,13 @@ func (main *Main) Initialize() error {
 	return nil
 }
 
-func (main *Main) Finalize() {
-	defer main.finalizeLog()
+func (this *Main) Finalize() error {
+	defer this.finalizeLog()
 
-	main.finalizeServer()
+	return this.finalizeServer()
 }
 
-func (main *Main) initializeFlag() error {
+func (this *Main) initializeFlag() error {
 	configFile := flag.String("config_file", "", "config file")
 	flag.Parse()
 
@@ -61,56 +61,71 @@ func (main *Main) initializeFlag() error {
 		return errors.New("invalid flag")
 	}
 
-	main.configFile = *configFile
+	this.configFile = *configFile
 
 	return nil
 }
 
-func (main *Main) initializeConfig() error {
-	return json.ToStructFromFile(main.configFile, &main.grpcServerConfig)
+func (this *Main) initializeConfig() error {
+	return json.ToStructFromFile(this.configFile, &this.grpcServerConfig)
 }
 
-func (main *Main) initializeLog() error {
-	level, err := log.ToIntLevel(main.grpcServerConfig.LogLevel)
+func (this *Main) initializeLog() error {
+	level, err := log.ToIntLevel(this.grpcServerConfig.LogLevel)
 	if err != nil {
 		return err
 	}
 
-	return log.Initialize(level, main.grpcServerConfig.LogOutputPath, main.grpcServerConfig.LogFileNamePrefix)
+	return log.Initialize(level, this.grpcServerConfig.LogOutputPath, this.grpcServerConfig.LogFileNamePrefix)
 }
 
-func (main *Main) finalizeLog() error {
+func (this *Main) finalizeLog() error {
 	return log.Finalize()
 }
 
-func (main *Main) initializeServer() error {
-	return main.server.Initialize(main.grpcServerConfig.Address, &sample.Server{})
-}
-
-func (main *Main) finalizeServer() error {
-	return main.server.Finalize()
-}
-
-func (main *Main) Run() {
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
-
-	go main.server.Run()
-
-	log.Info("signal : (%s)", <-signals)
-}
-
-func main() {
-	var main Main
-	err := main.Initialize()
+func (this *Main) initializeServer() error {
+	err := this.server.Initialize(this.grpcServerConfig.Address, &sample.Server{})
 	if err != nil {
-		log.Error("Initialize fail - error : (%s)", err.Error())
-		return
+		return err
 	}
-	defer main.Finalize()
+
+	go func() {
+		err := this.server.Run()
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	return nil
+}
+
+func (this *Main) finalizeServer() error {
+	return this.server.Finalize()
+}
+
+func (this *Main) Run() error {
+	err := this.Initialize()
+	if err != nil {
+		return err
+	}
+	defer this.Finalize()
 
 	log.Info("process start")
 	defer log.Info("process end")
 
-	main.Run()
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+
+	log.Info("signal : (%s)", <-signals)
+
+	return nil
+}
+
+func main() {
+	main := Main{}
+
+	err := main.Run()
+	if err != nil {
+		log.Error(err.Error())
+	}
 }
