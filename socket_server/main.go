@@ -21,23 +21,23 @@ type Main struct {
 	server socket.Server
 }
 
-func (main *Main) Initialize() error {
-	err := main.initializeFlag()
+func (this *Main) Initialize() error {
+	err := this.initializeFlag()
 	if err != nil {
 		return err
 	}
 
-	err = main.initializeConfig()
+	err = this.initializeConfig()
 	if err != nil {
 		return err
 	}
 
-	err = main.initializeLog()
+	err = this.initializeLog()
 	if err != nil {
 		return err
 	}
 
-	err = main.initializeServer()
+	err = this.initializeServer()
 	if err != nil {
 		return err
 	}
@@ -45,13 +45,13 @@ func (main *Main) Initialize() error {
 	return nil
 }
 
-func (main *Main) Finalize() error {
-	defer main.finalizeLog()
+func (this *Main) Finalize() error {
+	defer this.finalizeLog()
 
-	return main.finalizeServer()
+	return this.finalizeServer()
 }
 
-func (main *Main) initializeFlag() error {
+func (this *Main) initializeFlag() error {
 	configFile := flag.String("config_file", "", "config file")
 	flag.Parse()
 
@@ -60,29 +60,29 @@ func (main *Main) initializeFlag() error {
 		return errors.New("invalid flag")
 	}
 
-	main.configFile = *configFile
+	this.configFile = *configFile
 
 	return nil
 }
 
-func (main *Main) initializeConfig() error {
-	return json.ToStructFromFile(main.configFile, &main.socketServerConfig)
+func (this *Main) initializeConfig() error {
+	return json.ToStructFromFile(this.configFile, &this.socketServerConfig)
 }
 
-func (main *Main) initializeLog() error {
-	level, err := log.ToIntLevel(main.socketServerConfig.LogLevel)
+func (this *Main) initializeLog() error {
+	level, err := log.ToIntLevel(this.socketServerConfig.LogLevel)
 	if err != nil {
 		return err
 	}
 
-	return log.Initialize(level, main.socketServerConfig.LogOutputPath, main.socketServerConfig.LogFileNamePrefix)
+	return log.Initialize(level, this.socketServerConfig.LogOutputPath, this.socketServerConfig.LogFileNamePrefix)
 }
 
-func (main *Main) finalizeLog() error {
+func (this *Main) finalizeLog() error {
 	return log.Finalize()
 }
 
-func (main *Main) initializeServer() error {
+func (this *Main) initializeServer() error {
 	serverJob := func(client socket.Client) {
 		read := func(readJob func(readData string) bool) bool {
 			readData, err := client.Read(1024)
@@ -129,7 +129,7 @@ func (main *Main) initializeServer() error {
 	}
 
 	go func() {
-		err := main.server.Start("tcp", main.socketServerConfig.Address, main.socketServerConfig.ClientPoolSize, serverJob)
+		err := this.server.Start("tcp", this.socketServerConfig.Address, this.socketServerConfig.ClientPoolSize, serverJob)
 		if err != nil {
 			panic(err)
 		}
@@ -138,16 +138,16 @@ func (main *Main) initializeServer() error {
 	return nil
 }
 
-func (main *Main) finalizeServer() error {
-	return main.server.Stop()
+func (this *Main) finalizeServer() error {
+	return this.server.Stop()
 }
 
-func (main *Main) Run() error {
-	err := main.Initialize()
+func (this *Main) Run() error {
+	err := this.Initialize()
 	if err != nil {
 		return err
 	}
-	defer main.Finalize()
+	defer this.Finalize()
 
 	log.Info("process start")
 	defer log.Info("process end")
