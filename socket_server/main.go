@@ -48,9 +48,7 @@ func (main *Main) Initialize() error {
 func (main *Main) Finalize() error {
 	defer main.finalizeLog()
 
-	main.finalizeServer()
-
-	return nil
+	return main.finalizeServer()
 }
 
 func (main *Main) initializeFlag() error {
@@ -86,27 +84,48 @@ func (main *Main) finalizeLog() error {
 
 func (main *Main) initializeServer() error {
 	serverJob := func(client socket.Client) {
-		client.Write("greeting")
+		read := func(readJob func(readData string) bool) bool {
+			readData, err := client.Read(1024)
+			if err != nil {
+				log.Error("read fail - error : (%s)", err.Error)
+				return false
+			}
 
-		readData, err := client.Read(1024)
-		if err != nil {
-			log.Error("read fail - error : (%s)", err.Error)
+			return readJob(readData)
+		}
+
+		write := func(writeData string) bool {
+			writeLen, err := client.Write(writeData)
+			if err != nil {
+				log.Error("write error - (%s)", err.Error())
+				return false
+			}
+			if writeLen != len(writeData) {
+				log.Error("invalid write - (%d)(%d)", writeLen, len(writeData))
+				return false
+			}
+
+			log.Debug("write data - data : (%s)", writeData)
+
+			return true
+		}
+
+		if write("greeting") == false {
 			return
 		}
 
-		log.Debug("read data - data : (%s)", readData)
+		readJob1 := func(readData string) bool {
+			log.Debug("read data - data : (%s)", readData)
 
-		writeData := "[response] " + readData
-		writeLen, err := client.Write(writeData)
-		if err != nil {
-			log.Error("write fail - error : (%s)", err.Error)
+			if write("[response] "+readData) == false {
+				return false
+			}
+
+			return true
+		}
+		if read(readJob1) == false {
 			return
 		}
-		if writeLen != len(writeData) {
-			log.Error("write len is different - writeLen : (%d), len(writeData) : (%d)", writeLen, len(writeData))
-		}
-
-		log.Debug("write data - data : (%s)", writeData)
 	}
 
 	go func() {
@@ -123,23 +142,29 @@ func (main *Main) finalizeServer() error {
 	return main.server.Stop()
 }
 
-func (main *Main) Run() {
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
-
-	log.Info("signal : (%s)", <-signals)
-}
-
-func main() {
-	var main Main
+func (main *Main) Run() error {
 	err := main.Initialize()
 	if err != nil {
-		log.Error("Initialize fail - error : (%s)", err.Error())
-		return
+		return err
 	}
 	defer main.Finalize()
 
 	log.Info("process start")
-	main.Run()
-	log.Info("process end")
+	defer log.Info("process end")
+
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+
+	log.Info("signal : (%s)", <-signals)
+
+	return nil
+}
+
+func main() {
+	main := Main{}
+
+	err := main.Run()
+	if err != nil {
+		log.Error(err.Error())
+	}
 }
