@@ -2,14 +2,16 @@ package main
 
 import (
 	"flag"
+	"math/rand"
 	"os"
+	"strconv"
+	"sync"
 	"sync/atomic"
 	"syscall"
 	"testing"
 	"time"
 
 	"github.com/heaven-chp/base-server-go/config"
-	"github.com/heaven-chp/common-library-go/json"
 	"github.com/heaven-chp/common-library-go/socket"
 )
 
@@ -59,13 +61,14 @@ func TestMain3(t *testing.T) {
 		time.Sleep(100 * time.Millisecond)
 	}
 
-	{
-		var client socket.Client
+	clientJob := func(wg *sync.WaitGroup) {
+		defer wg.Done()
+
+		client := socket.Client{}
 		defer client.Close()
 
 		socketServerConfig := config.SocketServer{}
-
-		err := json.ToStructFromFile(configFile, &socketServerConfig)
+		err := config.Parsing(&socketServerConfig, configFile)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -83,7 +86,7 @@ func TestMain3(t *testing.T) {
 			t.Fatalf("invalid data - (%s)", readData)
 		}
 
-		writeData := "test"
+		writeData := "test-" + strconv.Itoa(rand.Intn(1000))
 		_, err = client.Write(writeData)
 		if err != nil {
 			t.Fatal(err)
@@ -97,6 +100,13 @@ func TestMain3(t *testing.T) {
 			t.Fatalf("invalid data - (%s)", readData)
 		}
 	}
+
+	wg := sync.WaitGroup{}
+	for i := 1; i <= 10; i++ {
+		wg.Add(1)
+		go clientJob(&wg)
+	}
+	wg.Wait()
 
 	err = syscall.Kill(os.Getpid(), syscall.SIGTERM)
 	if err != nil {

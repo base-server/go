@@ -8,17 +8,15 @@ import (
 	"syscall"
 
 	"github.com/heaven-chp/base-server-go/config"
+	command_line_argument "github.com/heaven-chp/common-library-go/command-line-argument"
 	"github.com/heaven-chp/common-library-go/grpc"
 	"github.com/heaven-chp/common-library-go/grpc/sample"
 	"github.com/heaven-chp/common-library-go/log"
 )
 
 type Main struct {
-	configFile string
-
+	server           grpc.Server
 	grpcServerConfig config.GrpcServer
-
-	server grpc.Server
 }
 
 func (this *Main) Initialize() error {
@@ -52,21 +50,23 @@ func (this *Main) Finalize() error {
 }
 
 func (this *Main) initializeFlag() error {
-	configFile := flag.String("config_file", "", "config file")
-	flag.Parse()
+	err := command_line_argument.Set([]command_line_argument.CommandLineArgumentInfo{
+		{FlagName: "config_file", Usage: "config/GrpcServer.config", DefaultValue: string("")},
+	})
+	if err != nil {
+		return nil
+	}
 
 	if flag.NFlag() != 1 {
 		flag.Usage()
 		return errors.New("invalid flag")
 	}
 
-	this.configFile = *configFile
-
 	return nil
 }
 
 func (this *Main) initializeConfig() error {
-	return config.Parsing(&this.grpcServerConfig, this.configFile)
+	return config.Parsing(&this.grpcServerConfig, command_line_argument.Get("config_file").(string))
 }
 
 func (this *Main) initializeLog() error {
