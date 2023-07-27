@@ -2,7 +2,7 @@ module github.com/heaven-chp/base-server-go
 
 go 1.20
 
-require github.com/heaven-chp/common-library-go v1.0.4
+require github.com/heaven-chp/common-library-go v1.0.5
 
 require (
 	github.com/golang/protobuf v1.5.3 // indirect

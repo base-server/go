@@ -12,7 +12,6 @@ import (
 	"github.com/heaven-chp/base-server-go/config"
 	"github.com/heaven-chp/common-library-go/grpc"
 	"github.com/heaven-chp/common-library-go/grpc/sample"
-	"github.com/heaven-chp/common-library-go/json"
 )
 
 func TestMain1(t *testing.T) {
@@ -66,8 +65,7 @@ func TestMain3(t *testing.T) {
 		defer cancel()
 
 		grpcServerConfig := config.GrpcServer{}
-
-		err := json.ToStructFromFile(configFile, &grpcServerConfig)
+		err := config.Parsing(&grpcServerConfig, configFile)
 		if err != nil {
 			t.Fatal(err)
 		}
