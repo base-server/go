@@ -83,13 +83,8 @@ func (this *Main) finalizeLog() error {
 }
 
 func (this *Main) initializeServer() error {
-	err := this.server.Initialize(this.grpcServerConfig.Address, &sample.Server{})
-	if err != nil {
-		return err
-	}
-
 	go func() {
-		err := this.server.Run()
+		err := this.server.Start(this.grpcServerConfig.Address, &sample.Server{})
 		if err != nil {
 			panic(err)
 		}
@@ -99,7 +94,7 @@ func (this *Main) initializeServer() error {
 }
 
 func (this *Main) finalizeServer() error {
-	return this.server.Finalize()
+	return this.server.Stop()
 }
 
 func (this *Main) Run() error {
