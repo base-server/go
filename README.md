@@ -20,6 +20,15 @@
      - `./bin/grpc-server -config_file ./config/GrpcServer.config`
    - log
      - `./log/grpc-server_YYYYMMDD.log`
+ - http
+   - build
+     - `go install github.com/swaggo/swag/cmd/swag@v1.16.1`
+     - `$(go env GOPATH)/bin/swag init --dir ./http-server --output ./http-server/swagger_docs`
+     - `go build -o ./bin/http-server ./http-server/`
+   - run
+     - `./bin/http-server -config_file ./config/HttpServer.config`
+   - log
+     - `./log/http-server_YYYYMMDD.log`
  - socket
    - build
      - `go build -o ./bin/socket-server ./socket-server/`
@@ -27,6 +36,7 @@
      - `./bin/socket-server -config_file ./config/SocketServer.config`
    - log
      - `./log/socket-server_YYYYMMDD.log`
+
 <br/>
 
 ## Test and Coverage
@@ -34,6 +44,6 @@
    - `go clean -testcache && go test -cover ./...`
  - Coverage
    - make coverage file
-     - `go clean -testcache && go test -coverprofile=coverage.out -cover ./...`
+     - `go clean -testcache && go test -coverprofile=coverage.out -cover $(go list ./... | grep -v "/swagger_docs")`
    - convert coverage file to html file
      - `go tool cover -html=./coverage.out -o ./coverage.html`

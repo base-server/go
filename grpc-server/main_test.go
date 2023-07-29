@@ -43,27 +43,19 @@ func TestMain3(t *testing.T) {
 	}
 	configFile := path + "/../config/GrpcServer.config"
 
-	sleep := atomic.Bool{}
-	sleep.Store(true)
 	condition := atomic.Bool{}
-	condition.Store(false)
+	condition.Store(true)
 	go func() {
+		defer condition.Store(false)
+
 		os.Args = []string{"test", "-config_file=" + configFile}
 		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
-		sleep.Store(false)
-		condition.Store(true)
 		main()
-		condition.Store(false)
 	}()
-	for sleep.Load() {
-		time.Sleep(100 * time.Millisecond)
-	}
+	time.Sleep(200 * time.Millisecond)
 
 	{
-		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(5)*time.Second)
-		defer cancel()
-
 		grpcServerConfig := config.GrpcServer{}
 		err := config.Parsing(&grpcServerConfig, configFile)
 		if err != nil {
@@ -78,8 +70,9 @@ func TestMain3(t *testing.T) {
 
 		client := sample.NewSampleClient(connection)
 
-		request := sample.Request{Data1: 1, Data2: "abc"}
-		reply, err := client.Func(ctx, &request)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		reply, err := client.Func1(ctx, &sample.Request{Data1: 1, Data2: "abc"})
 		if err != nil {
 			t.Fatal(err)
 		}
