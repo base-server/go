@@ -5,14 +5,26 @@ import (
 	"flag"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/heaven-chp/base-server-go/config"
 	command_line_argument "github.com/heaven-chp/common-library-go/command-line-argument"
 	"github.com/heaven-chp/common-library-go/grpc"
 	"github.com/heaven-chp/common-library-go/grpc/sample"
-	"github.com/heaven-chp/common-library-go/log"
+	log "github.com/heaven-chp/common-library-go/log/file"
 )
+
+var onceForLog sync.Once
+var fileLog *log.FileLog
+
+func log_instance() *log.FileLog {
+	onceForLog.Do(func() {
+		fileLog = &log.FileLog{}
+	})
+
+	return fileLog
+}
 
 type Main struct {
 	server           grpc.Server
@@ -70,16 +82,16 @@ func (this *Main) initializeConfig() error {
 }
 
 func (this *Main) initializeLog() error {
-	level, err := log.ToIntLevel(this.grpcServerConfig.LogLevel)
-	if err != nil {
-		return err
-	}
-
-	return log.Initialize(level, this.grpcServerConfig.LogOutputPath, this.grpcServerConfig.LogFileNamePrefix)
+	return log_instance().Initialize(log.Setting{
+		Level:           this.grpcServerConfig.Log.Level,
+		OutputPath:      this.grpcServerConfig.Log.OutputPath,
+		FileNamePrefix:  this.grpcServerConfig.Log.FileNamePrefix,
+		PrintCallerInfo: this.grpcServerConfig.Log.PrintCallerInfo,
+		ChannelSize:     this.grpcServerConfig.Log.ChannelSize})
 }
 
 func (this *Main) finalizeLog() error {
-	return log.Finalize()
+	return log_instance().Finalize()
 }
 
 func (this *Main) initializeServer() error {
@@ -104,13 +116,13 @@ func (this *Main) Run() error {
 	}
 	defer this.Finalize()
 
-	log.Info("process start")
-	defer log.Info("process end")
+	log_instance().Info("process start")
+	defer log_instance().Info("process end")
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
-	log.Info("signal : (%s)", <-signals)
+	log_instance().Infof("signal : (%s)", <-signals)
 
 	return nil
 }
@@ -120,6 +132,6 @@ func main() {
 
 	err := main.Run()
 	if err != nil {
-		log.Error(err.Error())
+		log_instance().Error(err)
 	}
 }

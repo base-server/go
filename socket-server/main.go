@@ -7,14 +7,26 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"sync"
 	"syscall"
 
 	"github.com/heaven-chp/base-server-go/config"
 	command_line_argument "github.com/heaven-chp/common-library-go/command-line-argument"
-	"github.com/heaven-chp/common-library-go/log"
+	log "github.com/heaven-chp/common-library-go/log/file"
 	"github.com/heaven-chp/common-library-go/socket"
 	"github.com/heaven-chp/common-library-go/utility"
 )
+
+var onceForLog sync.Once
+var fileLog *log.FileLog
+
+func log_instance() *log.FileLog {
+	onceForLog.Do(func() {
+		fileLog = &log.FileLog{}
+	})
+
+	return fileLog
+}
 
 type Main struct {
 	server             socket.Server
@@ -72,30 +84,30 @@ func (this *Main) initializeConfig() error {
 }
 
 func (this *Main) initializeLog() error {
-	level, err := log.ToIntLevel(this.socketServerConfig.LogLevel)
-	if err != nil {
-		return err
-	}
-
-	return log.Initialize(level, this.socketServerConfig.LogOutputPath, this.socketServerConfig.LogFileNamePrefix)
+	return log_instance().Initialize(log.Setting{
+		Level:           this.socketServerConfig.Log.Level,
+		OutputPath:      this.socketServerConfig.Log.OutputPath,
+		FileNamePrefix:  this.socketServerConfig.Log.FileNamePrefix,
+		PrintCallerInfo: this.socketServerConfig.Log.PrintCallerInfo,
+		ChannelSize:     this.socketServerConfig.Log.ChannelSize})
 }
 
 func (this *Main) finalizeLog() error {
-	return log.Finalize()
+	return log_instance().Finalize()
 }
 
 func (this *Main) initializeServer() error {
 	acceptSuccessFunc := func(client socket.Client) {
 		prefixLog := ""
-		callerInfo, err := utility.GetCallerInfo()
+		callerInfo, err := utility.GetCallerInfo(1)
 		if err != nil {
-			log.Error(err.Error())
+			log_instance().Error(err)
 		} else {
 			prefixLog = "[goroutine-id:" + strconv.Itoa(callerInfo.GoroutineID) + "] : "
 		}
 
-		log.Debug("%sstart - (%s)(%s)", prefixLog, client.GetRemoteAddr().Network(), client.GetRemoteAddr().String())
-		defer log.Debug("%send - (%s)(%s)", prefixLog, client.GetRemoteAddr().Network(), client.GetRemoteAddr().String())
+		log_instance().Debugf("%sstart - (%s)(%s)", prefixLog, client.GetRemoteAddr().Network(), client.GetRemoteAddr().String())
+		defer log_instance().Debugf("%send - (%s)(%s)", prefixLog, client.GetRemoteAddr().Network(), client.GetRemoteAddr().String())
 
 		read := func(readJob func(readData string) error) error {
 			readData, err := client.Read(1024)
@@ -103,7 +115,7 @@ func (this *Main) initializeServer() error {
 				return err
 			}
 
-			log.Debug("%sread data - data : (%s)", prefixLog, readData)
+			log_instance().Debugf("%sread data - data : (%s)", prefixLog, readData)
 
 			return readJob(readData)
 		}
@@ -117,14 +129,14 @@ func (this *Main) initializeServer() error {
 				return errors.New(fmt.Sprintf("invalid write - (%d)(%d)", writeLen, len(writeData)))
 			}
 
-			log.Debug("%swrite data - data : (%s)", prefixLog, writeData)
+			log_instance().Debugf("%swrite data - data : (%s)", prefixLog, writeData)
 
 			return nil
 		}
 
 		err = write("greeting")
 		if err != nil {
-			log.Error("%s%s", prefixLog, err.Error())
+			log_instance().Errorf("%s%s", prefixLog, err.Error())
 			return
 		}
 
@@ -133,13 +145,13 @@ func (this *Main) initializeServer() error {
 		}
 		err = read(readJob)
 		if err != nil {
-			log.Error("%s%s", prefixLog, err.Error())
+			log_instance().Errorf("%s%s", prefixLog, err.Error())
 			return
 		}
 	}
 
 	acceptFailureFunc := func(err error) {
-		log.Error(err.Error())
+		log_instance().Error(err)
 	}
 
 	err := this.server.Start("tcp", this.socketServerConfig.Address, this.socketServerConfig.ClientPoolSize, acceptSuccessFunc, acceptFailureFunc)
@@ -161,13 +173,13 @@ func (this *Main) Run() error {
 	}
 	defer this.Finalize()
 
-	log.Info("process start")
-	defer log.Info("process end")
+	log_instance().Info("process start")
+	defer log_instance().Info("process end")
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
-	log.Info("signal : (%s)", <-signals)
+	log_instance().Infof("signal : (%s)", <-signals)
 
 	return nil
 }
@@ -177,6 +189,6 @@ func main() {
 
 	err := main.Run()
 	if err != nil {
-		log.Error(err.Error())
+		log_instance().Error(err)
 	}
 }

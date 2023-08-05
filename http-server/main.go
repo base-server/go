@@ -6,15 +6,27 @@ import (
 	net_http "net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/heaven-chp/base-server-go/config"
 	"github.com/heaven-chp/base-server-go/http-server/swagger_docs"
 	command_line_argument "github.com/heaven-chp/common-library-go/command-line-argument"
 	"github.com/heaven-chp/common-library-go/http"
-	"github.com/heaven-chp/common-library-go/log"
+	log "github.com/heaven-chp/common-library-go/log/file"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
+
+var onceForLog sync.Once
+var fileLog *log.FileLog
+
+func log_instance() *log.FileLog {
+	onceForLog.Do(func() {
+		fileLog = &log.FileLog{}
+	})
+
+	return fileLog
+}
 
 type Main struct {
 	server           http.Server
@@ -77,12 +89,12 @@ func (this *Main) initializeConfig() error {
 }
 
 func (this *Main) initializeLog() error {
-	level, err := log.ToIntLevel(this.httpServerConfig.LogLevel)
-	if err != nil {
-		return err
-	}
-
-	return log.Initialize(level, this.httpServerConfig.LogOutputPath, this.httpServerConfig.LogFileNamePrefix)
+	return log_instance().Initialize(log.Setting{
+		Level:           this.httpServerConfig.Log.Level,
+		OutputPath:      this.httpServerConfig.Log.OutputPath,
+		FileNamePrefix:  this.httpServerConfig.Log.FileNamePrefix,
+		PrintCallerInfo: this.httpServerConfig.Log.PrintCallerInfo,
+		ChannelSize:     this.httpServerConfig.Log.ChannelSize})
 }
 
 func (this *Main) initializeSwagger() error {
@@ -102,11 +114,11 @@ func (this *Main) initializeServer() error {
 	this.server.AddHandler("/v1/test", net_http.MethodPost, testPost)
 	this.server.AddHandler("/v1/test/{id:[a-z,A-Z][a-z,A-Z,0-9,--,_,.]+}", net_http.MethodDelete, testDelete)
 
-	return this.server.Start(this.httpServerConfig.ServerAddress, func(err error) { log.Error(err.Error()) })
+	return this.server.Start(this.httpServerConfig.ServerAddress, func(err error) { log_instance().Error(err) })
 }
 
 func (this *Main) finalizeLog() error {
-	return log.Finalize()
+	return log_instance().Finalize()
 }
 
 func (this *Main) finalizeServer() error {
@@ -120,13 +132,13 @@ func (this *Main) Run() error {
 	}
 	defer this.finalize()
 
-	log.Info("process start")
-	defer log.Info("process end")
+	log_instance().Info("process start")
+	defer log_instance().Info("process end")
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
-	log.Info("signal : (%s)", <-signals)
+	log_instance().Infof("signal : (%s)", <-signals)
 
 	return nil
 }
@@ -135,6 +147,6 @@ func main() {
 	main := Main{}
 	err := main.Run()
 	if err != nil {
-		log.Error(err.Error())
+		log_instance().Error(err)
 	}
 }
