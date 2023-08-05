@@ -29,6 +29,13 @@
      - `./bin/http-server -config_file ./config/HttpServer.config`
    - log
      - `./log/http-server_YYYYMMDD.log`
+ - long-polling
+   - build
+     - `go build -o ./bin/long-polling-server ./long-polling-server/`
+   - run
+     - `./bin/long-polling-server -config_file ./config/LongPollingServer.config`
+   - log
+     - `./log/long-polling-server_YYYYMMDD.log`
  - socket
    - build
      - `go build -o ./bin/socket-server ./socket-server/`
