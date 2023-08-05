@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"flag"
+	"net/http"
 	"os"
 	"os/signal"
 	"sync"
@@ -10,9 +11,8 @@ import (
 
 	"github.com/heaven-chp/base-server-go/config"
 	command_line_argument "github.com/heaven-chp/common-library-go/command-line-argument"
-	"github.com/heaven-chp/common-library-go/grpc"
-	"github.com/heaven-chp/common-library-go/grpc/sample"
 	log "github.com/heaven-chp/common-library-go/log/file"
+	long_polling "github.com/heaven-chp/common-library-go/long-polling"
 )
 
 var onceForLog sync.Once
@@ -27,8 +27,8 @@ func log_instance() *log.FileLog {
 }
 
 type Main struct {
-	server           grpc.Server
-	grpcServerConfig config.GrpcServer
+	server                  long_polling.Server
+	longPollingServerConfig config.LongPollingServer
 }
 
 func (this *Main) Initialize() error {
@@ -63,7 +63,7 @@ func (this *Main) Finalize() error {
 
 func (this *Main) initializeFlag() error {
 	err := command_line_argument.Set([]command_line_argument.CommandLineArgumentInfo{
-		{FlagName: "config_file", Usage: "config/GrpcServer.config", DefaultValue: string("")},
+		{FlagName: "config_file", Usage: "config/LongPollingServer.config", DefaultValue: string("")},
 	})
 	if err != nil {
 		return nil
@@ -78,16 +78,16 @@ func (this *Main) initializeFlag() error {
 }
 
 func (this *Main) initializeConfig() error {
-	return config.Parsing(&this.grpcServerConfig, command_line_argument.Get("config_file").(string))
+	return config.Parsing(&this.longPollingServerConfig, command_line_argument.Get("config_file").(string))
 }
 
 func (this *Main) initializeLog() error {
 	return log_instance().Initialize(log.Setting{
-		Level:           this.grpcServerConfig.Log.Level,
-		OutputPath:      this.grpcServerConfig.Log.OutputPath,
-		FileNamePrefix:  this.grpcServerConfig.Log.FileNamePrefix,
-		PrintCallerInfo: this.grpcServerConfig.Log.PrintCallerInfo,
-		ChannelSize:     this.grpcServerConfig.Log.ChannelSize})
+		Level:           this.longPollingServerConfig.Log.Level,
+		OutputPath:      this.longPollingServerConfig.Log.OutputPath,
+		FileNamePrefix:  this.longPollingServerConfig.Log.FileNamePrefix,
+		PrintCallerInfo: this.longPollingServerConfig.Log.PrintCallerInfo,
+		ChannelSize:     this.longPollingServerConfig.Log.ChannelSize})
 }
 
 func (this *Main) finalizeLog() error {
@@ -95,18 +95,30 @@ func (this *Main) finalizeLog() error {
 }
 
 func (this *Main) initializeServer() error {
-	go func() {
-		err := this.server.Start(this.grpcServerConfig.Address, &sample.Server{})
-		if err != nil {
-			panic(err)
-		}
-	}()
+	serverInfo := long_polling.ServerInfo{
+		Address:                        this.longPollingServerConfig.Address,
+		Timeout:                        this.longPollingServerConfig.Timeout,
+		SubscriptionURI:                this.longPollingServerConfig.SubscriptionURI,
+		HandlerToRunBeforeSubscription: func(w http.ResponseWriter, r *http.Request) bool { return true },
+		PublishURI:                     this.longPollingServerConfig.PublishURI,
+		HandlerToRunBeforePublish:      func(w http.ResponseWriter, r *http.Request) bool { return true }}
+
+	filePersistorInfo := long_polling.FilePersistorInfo{
+		Use:                     this.longPollingServerConfig.FilePersistorInfo.Use,
+		FileName:                this.longPollingServerConfig.FilePersistorInfo.FileName,
+		WriteBufferSize:         this.longPollingServerConfig.FilePersistorInfo.WriteBufferSize,
+		WriteFlushPeriodSeconds: this.longPollingServerConfig.FilePersistorInfo.WriteFlushPeriodSeconds}
+
+	err := this.server.Start(serverInfo, filePersistorInfo, func(err error) { log_instance().Error(err) })
+	if err != nil {
+		panic(err)
+	}
 
 	return nil
 }
 
 func (this *Main) finalizeServer() error {
-	return this.server.Stop()
+	return this.server.Stop(this.longPollingServerConfig.ShutdownTimeout)
 }
 
 func (this *Main) Run() error {

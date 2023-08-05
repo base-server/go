@@ -5,7 +5,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/heaven-chp/common-library-go/json"
-	"github.com/heaven-chp/common-library-go/log"
 )
 
 type ResponseSuccess struct {
@@ -36,16 +35,16 @@ type Test struct {
 // @Router /v1/test/{id} [get]
 // @tags test
 func testGet(w http.ResponseWriter, r *http.Request) {
-	log.Debug("[%s] [%s] start", r.RequestURI, r.Method)
-	defer log.Debug("[%s] [%s] end", r.RequestURI, r.Method)
+	log_instance().Debugf("[%s] [%s] start", r.RequestURI, r.Method)
+	defer log_instance().Debugf("[%s] [%s] end", r.RequestURI, r.Method)
 
-	log.Debug("header-1 : (%s)", r.Header.Get("header-1"))
+	log_instance().Debugf("header-1 : (%s)", r.Header.Get("header-1"))
 
-	log.Debug("id : (%s)", mux.Vars(r)["id"])
+	log_instance().Debugf("id : (%s)", mux.Vars(r)["id"])
 
-	log.Debug("param-1 : (%s)", r.URL.Query().Get("param-1"))
-	log.Debug("param-2 : (%s)", r.URL.Query().Get("param-2"))
-	log.Debug("param-3 : (%s)", r.URL.Query().Get("param-3"))
+	log_instance().Debugf("param-1 : (%s)", r.URL.Query().Get("param-1"))
+	log_instance().Debugf("param-2 : (%s)", r.URL.Query().Get("param-2"))
+	log_instance().Debugf("param-3 : (%s)", r.URL.Query().Get("param-3"))
 
 	body, err := json.ToString(Test{ID: mux.Vars(r)["id"], Field1: 1, Field2: "value-2"})
 	if err != nil {

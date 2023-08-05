@@ -14,18 +14,6 @@ func TestHttpServer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if httpServerConfig.LogLevel != "DEBUG" {
-		t.Errorf("invalid data - LogLevel : (%s)", httpServerConfig.LogLevel)
-	}
-
-	if httpServerConfig.LogOutputPath != "./log/" {
-		t.Errorf("invalid data - LogOutputPath : (%s)", httpServerConfig.LogOutputPath)
-	}
-
-	if httpServerConfig.LogFileNamePrefix != "http_server" {
-		t.Errorf("invalid data - LogFileNamePrefix : (%s)", httpServerConfig.LogFileNamePrefix)
-	}
-
 	if httpServerConfig.SwaggerAddress != "127.0.0.1:10000" {
 		t.Errorf("invalid data - SwaggerAddress : (%s)", httpServerConfig.SwaggerAddress)
 	}
@@ -40,5 +28,25 @@ func TestHttpServer(t *testing.T) {
 
 	if httpServerConfig.ShutdownTimeout != 10 {
 		t.Errorf("invalid data - ShutdownTimeout : (%d)", httpServerConfig.ShutdownTimeout)
+	}
+
+	if httpServerConfig.Log.Level != "DEBUG" {
+		t.Errorf("invalid data - Log.Level : (%s)", httpServerConfig.Log.Level)
+	}
+
+	if httpServerConfig.Log.OutputPath != "./log/" {
+		t.Errorf("invalid data - Log.OutputPath : (%s)", httpServerConfig.Log.OutputPath)
+	}
+
+	if httpServerConfig.Log.FileNamePrefix != "http-server" {
+		t.Errorf("invalid data - Log.FileNamePrefix : (%s)", httpServerConfig.Log.FileNamePrefix)
+	}
+
+	if httpServerConfig.Log.PrintCallerInfo != true {
+		t.Errorf("invalid data - Log.PrintCallerInfo : (%t)", httpServerConfig.Log.PrintCallerInfo)
+	}
+
+	if httpServerConfig.Log.ChannelSize != 1024 {
+		t.Errorf("invalid data - Log.ChannelSize : (%d)", httpServerConfig.Log.ChannelSize)
 	}
 }

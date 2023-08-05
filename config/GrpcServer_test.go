@@ -14,19 +14,27 @@ func TestGrpcServer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if grpcServerConfig.LogLevel != "DEBUG" {
-		t.Errorf("invalid data - LogLevel : (%s)", grpcServerConfig.LogLevel)
-	}
-
-	if grpcServerConfig.LogOutputPath != "./log/" {
-		t.Errorf("invalid data - LogOutputPath : (%s)", grpcServerConfig.LogOutputPath)
-	}
-
-	if grpcServerConfig.LogFileNamePrefix != "grpc-server" {
-		t.Errorf("invalid data - LogFileNamePrefix : (%s)", grpcServerConfig.LogFileNamePrefix)
-	}
-
 	if grpcServerConfig.Address != ":50051" {
 		t.Errorf("invalid data - Address : (%s)", grpcServerConfig.Address)
+	}
+
+	if grpcServerConfig.Log.Level != "DEBUG" {
+		t.Errorf("invalid data - Log.Level : (%s)", grpcServerConfig.Log.Level)
+	}
+
+	if grpcServerConfig.Log.OutputPath != "./log/" {
+		t.Errorf("invalid data - Log.OutputPath : (%s)", grpcServerConfig.Log.OutputPath)
+	}
+
+	if grpcServerConfig.Log.FileNamePrefix != "grpc-server" {
+		t.Errorf("invalid data - Log.FileNamePrefix : (%s)", grpcServerConfig.Log.FileNamePrefix)
+	}
+
+	if grpcServerConfig.Log.PrintCallerInfo != true {
+		t.Errorf("invalid data - Log.PrintCallerInfo : (%t)", grpcServerConfig.Log.PrintCallerInfo)
+	}
+
+	if grpcServerConfig.Log.ChannelSize != 1024 {
+		t.Errorf("invalid data - Log.ChannelSize : (%d)", grpcServerConfig.Log.ChannelSize)
 	}
 }

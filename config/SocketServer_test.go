@@ -14,23 +14,31 @@ func TestSocketServer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if socketServerConfig.LogLevel != "DEBUG" {
-		t.Errorf("invalid data - LogLevel : (%s)", socketServerConfig.LogLevel)
-	}
-
-	if socketServerConfig.LogOutputPath != "./log/" {
-		t.Errorf("invalid data - LogOutputPath : (%s)", socketServerConfig.LogOutputPath)
-	}
-
-	if socketServerConfig.LogFileNamePrefix != "socket-server" {
-		t.Errorf("invalid data - LogFileNamePrefix : (%s)", socketServerConfig.LogFileNamePrefix)
-	}
-
 	if socketServerConfig.Address != ":20000" {
 		t.Errorf("invalid data - Address : (%s)", socketServerConfig.Address)
 	}
 
 	if socketServerConfig.ClientPoolSize != 1024 {
 		t.Errorf("invalid data - ClientPoolSize : (%d)", socketServerConfig.ClientPoolSize)
+	}
+
+	if socketServerConfig.Log.Level != "DEBUG" {
+		t.Errorf("invalid data - Log.Level : (%s)", socketServerConfig.Log.Level)
+	}
+
+	if socketServerConfig.Log.OutputPath != "./log/" {
+		t.Errorf("invalid data - Log.OutputPath : (%s)", socketServerConfig.Log.OutputPath)
+	}
+
+	if socketServerConfig.Log.FileNamePrefix != "socket-server" {
+		t.Errorf("invalid data - Log.FileNamePrefix : (%s)", socketServerConfig.Log.FileNamePrefix)
+	}
+
+	if socketServerConfig.Log.PrintCallerInfo != true {
+		t.Errorf("invalid data - Log.PrintCallerInfo : (%t)", socketServerConfig.Log.PrintCallerInfo)
+	}
+
+	if socketServerConfig.Log.ChannelSize != 1024 {
+		t.Errorf("invalid data - Log.ChannelSize : (%d)", socketServerConfig.Log.ChannelSize)
 	}
 }
