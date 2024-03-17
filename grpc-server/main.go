@@ -5,26 +5,14 @@ import (
 	"flag"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 
 	"github.com/heaven-chp/base-server-go/config"
-	command_line_argument "github.com/heaven-chp/common-library-go/command-line-argument"
+	"github.com/heaven-chp/base-server-go/grpc-server/log"
+	command_line_flag "github.com/heaven-chp/common-library-go/command-line/flag"
 	"github.com/heaven-chp/common-library-go/grpc"
 	"github.com/heaven-chp/common-library-go/grpc/sample"
-	log "github.com/heaven-chp/common-library-go/log/file"
 )
-
-var onceForLog sync.Once
-var fileLog *log.FileLog
-
-func log_instance() *log.FileLog {
-	onceForLog.Do(func() {
-		fileLog = &log.FileLog{}
-	})
-
-	return fileLog
-}
 
 type Main struct {
 	server           grpc.Server
@@ -62,7 +50,7 @@ func (this *Main) Finalize() error {
 }
 
 func (this *Main) initializeFlag() error {
-	err := command_line_argument.Set([]command_line_argument.CommandLineArgumentInfo{
+	err := command_line_flag.Parse([]command_line_flag.FlagInfo{
 		{FlagName: "config_file", Usage: "config/GrpcServer.config", DefaultValue: string("")},
 	})
 	if err != nil {
@@ -78,20 +66,26 @@ func (this *Main) initializeFlag() error {
 }
 
 func (this *Main) initializeConfig() error {
-	return config.Parsing(&this.grpcServerConfig, command_line_argument.Get("config_file").(string))
+	fileName := command_line_flag.Get[string]("config_file")
+
+	if grpcServerConfig, err := config.Get[config.GrpcServer](fileName); err != nil {
+		return err
+	} else {
+		this.grpcServerConfig = grpcServerConfig
+		return nil
+	}
 }
 
 func (this *Main) initializeLog() error {
-	return log_instance().Initialize(log.Setting{
-		Level:           this.grpcServerConfig.Log.Level,
-		OutputPath:      this.grpcServerConfig.Log.OutputPath,
-		FileNamePrefix:  this.grpcServerConfig.Log.FileNamePrefix,
-		PrintCallerInfo: this.grpcServerConfig.Log.PrintCallerInfo,
-		ChannelSize:     this.grpcServerConfig.Log.ChannelSize})
+	log.Initialize(this.grpcServerConfig)
+
+	return nil
 }
 
 func (this *Main) finalizeLog() error {
-	return log_instance().Finalize()
+	log.Server.Flush()
+
+	return nil
 }
 
 func (this *Main) initializeServer() error {
@@ -116,13 +110,13 @@ func (this *Main) Run() error {
 	}
 	defer this.Finalize()
 
-	log_instance().Info("process start")
-	defer log_instance().Info("process end")
+	log.Server.Info("process start")
+	defer log.Server.Info("process end")
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
-	log_instance().Infof("signal : (%s)", <-signals)
+	log.Server.Info("signal", "kind", <-signals)
 
 	return nil
 }
@@ -132,6 +126,6 @@ func main() {
 
 	err := main.Run()
 	if err != nil {
-		log_instance().Error(err)
+		log.Server.Error(err.Error())
 	}
 }

@@ -1,20 +1,17 @@
 package config
 
-import "github.com/heaven-chp/common-library-go/json"
-
 type SocketServer struct {
 	Address        string `json:"address"`
 	ClientPoolSize int    `json:"client_pool_size"`
 
 	Log struct {
-		Level           string `json:"level"`
-		OutputPath      string `json:"output_path"`
-		FileNamePrefix  string `json:"file_name_prefix"`
-		PrintCallerInfo bool   `json:"print_caller_info"`
-		ChannelSize     int    `json:"channel_size"`
+		Level  string `json:"level"`
+		Output string `json:"output"`
+		File   struct {
+			Name          string `json:"name"`
+			ExtensionName string `json:"extensionName"`
+			AddDate       bool   `json:"addDate"`
+		} `json:"file"`
+		WithCallerInfo bool `json:"withCallerInfo"`
 	} `json:"log"`
-}
-
-func (this *SocketServer) parsing(from interface{}) error {
-	return json.ToStructFromFile(from.(string), this)
 }

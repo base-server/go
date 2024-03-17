@@ -1,10 +1,10 @@
 // Package config provides a struct that can store json type config file
 package config
 
-type common interface {
-	parsing(from interface{}) error
-}
+import (
+	"github.com/heaven-chp/common-library-go/json"
+)
 
-func Parsing(to common, from interface{}) error {
-	return to.parsing(from)
+func Get[T any](fileName string) (T, error) {
+	return json.ConvertFromFile[T](fileName)
 }

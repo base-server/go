@@ -6,27 +6,13 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"strconv"
-	"sync"
 	"syscall"
 
 	"github.com/heaven-chp/base-server-go/config"
-	command_line_argument "github.com/heaven-chp/common-library-go/command-line-argument"
-	log "github.com/heaven-chp/common-library-go/log/file"
+	"github.com/heaven-chp/base-server-go/socket-server/log"
+	command_line_flag "github.com/heaven-chp/common-library-go/command-line/flag"
 	"github.com/heaven-chp/common-library-go/socket"
-	"github.com/heaven-chp/common-library-go/utility"
 )
-
-var onceForLog sync.Once
-var fileLog *log.FileLog
-
-func log_instance() *log.FileLog {
-	onceForLog.Do(func() {
-		fileLog = &log.FileLog{}
-	})
-
-	return fileLog
-}
 
 type Main struct {
 	server             socket.Server
@@ -64,7 +50,7 @@ func (this *Main) Finalize() error {
 }
 
 func (this *Main) initializeFlag() error {
-	err := command_line_argument.Set([]command_line_argument.CommandLineArgumentInfo{
+	err := command_line_flag.Parse([]command_line_flag.FlagInfo{
 		{FlagName: "config_file", Usage: "config/SocketServer.config", DefaultValue: string("")},
 	})
 	if err != nil {
@@ -80,34 +66,32 @@ func (this *Main) initializeFlag() error {
 }
 
 func (this *Main) initializeConfig() error {
-	return config.Parsing(&this.socketServerConfig, command_line_argument.Get("config_file").(string))
+	fileName := command_line_flag.Get[string]("config_file")
+
+	if socketServerConfig, err := config.Get[config.SocketServer](fileName); err != nil {
+		return err
+	} else {
+		this.socketServerConfig = socketServerConfig
+		return nil
+	}
 }
 
 func (this *Main) initializeLog() error {
-	return log_instance().Initialize(log.Setting{
-		Level:           this.socketServerConfig.Log.Level,
-		OutputPath:      this.socketServerConfig.Log.OutputPath,
-		FileNamePrefix:  this.socketServerConfig.Log.FileNamePrefix,
-		PrintCallerInfo: this.socketServerConfig.Log.PrintCallerInfo,
-		ChannelSize:     this.socketServerConfig.Log.ChannelSize})
+	log.Initialize(this.socketServerConfig)
+
+	return nil
 }
 
 func (this *Main) finalizeLog() error {
-	return log_instance().Finalize()
+	log.Server.Flush()
+
+	return nil
 }
 
 func (this *Main) initializeServer() error {
 	acceptSuccessFunc := func(client socket.Client) {
-		prefixLog := ""
-		callerInfo, err := utility.GetCallerInfo(1)
-		if err != nil {
-			log_instance().Error(err)
-		} else {
-			prefixLog = "[goroutine-id:" + strconv.Itoa(callerInfo.GoroutineID) + "] : "
-		}
-
-		log_instance().Debugf("%sstart - (%s)(%s)", prefixLog, client.GetRemoteAddr().Network(), client.GetRemoteAddr().String())
-		defer log_instance().Debugf("%send - (%s)(%s)", prefixLog, client.GetRemoteAddr().Network(), client.GetRemoteAddr().String())
+		log.Server.Debug("start", "network", client.GetRemoteAddr().Network(), "address", client.GetRemoteAddr().String())
+		log.Server.Debug("end", "network", client.GetRemoteAddr().Network(), "address", client.GetRemoteAddr().String())
 
 		read := func(readJob func(readData string) error) error {
 			readData, err := client.Read(1024)
@@ -115,7 +99,7 @@ func (this *Main) initializeServer() error {
 				return err
 			}
 
-			log_instance().Debugf("%sread data - data : (%s)", prefixLog, readData)
+			log.Server.Debug("read", "data", readData)
 
 			return readJob(readData)
 		}
@@ -129,14 +113,14 @@ func (this *Main) initializeServer() error {
 				return errors.New(fmt.Sprintf("invalid write - (%d)(%d)", writeLen, len(writeData)))
 			}
 
-			log_instance().Debugf("%swrite data - data : (%s)", prefixLog, writeData)
+			log.Server.Debug("write", "data", writeData)
 
 			return nil
 		}
 
-		err = write("greeting")
+		err := write("greeting")
 		if err != nil {
-			log_instance().Errorf("%s%s", prefixLog, err.Error())
+			log.Server.Error(err.Error())
 			return
 		}
 
@@ -145,13 +129,13 @@ func (this *Main) initializeServer() error {
 		}
 		err = read(readJob)
 		if err != nil {
-			log_instance().Errorf("%s%s", prefixLog, err.Error())
+			log.Server.Error(err.Error())
 			return
 		}
 	}
 
 	acceptFailureFunc := func(err error) {
-		log_instance().Error(err)
+		log.Server.Error(err.Error())
 	}
 
 	err := this.server.Start("tcp", this.socketServerConfig.Address, this.socketServerConfig.ClientPoolSize, acceptSuccessFunc, acceptFailureFunc)
@@ -173,13 +157,13 @@ func (this *Main) Run() error {
 	}
 	defer this.Finalize()
 
-	log_instance().Info("process start")
-	defer log_instance().Info("process end")
+	log.Server.Info("process start")
+	defer log.Server.Info("process end")
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
-	log_instance().Infof("signal : (%s)", <-signals)
+	log.Server.Info("signal", "kind", <-signals)
 
 	return nil
 }
@@ -189,6 +173,6 @@ func main() {
 
 	err := main.Run()
 	if err != nil {
-		log_instance().Error(err)
+		log.Server.Error(err.Error())
 	}
 }

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/heaven-chp/base-server-go/config"
+	"github.com/heaven-chp/common-library-go/file"
 	"github.com/heaven-chp/common-library-go/grpc"
 	"github.com/heaven-chp/common-library-go/grpc/sample"
 )
@@ -43,6 +44,12 @@ func TestMain3(t *testing.T) {
 	}
 	configFile := path + "/../config/GrpcServer.config"
 
+	grpcServerConfig, err := config.Get[config.GrpcServer](configFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Remove(grpcServerConfig.Log.File.Name + "." + grpcServerConfig.Log.File.ExtensionName)
+
 	condition := atomic.Bool{}
 	condition.Store(true)
 	go func() {
@@ -56,12 +63,6 @@ func TestMain3(t *testing.T) {
 	time.Sleep(200 * time.Millisecond)
 
 	{
-		grpcServerConfig := config.GrpcServer{}
-		err := config.Parsing(&grpcServerConfig, configFile)
-		if err != nil {
-			t.Fatal(err)
-		}
-
 		connection, err := grpc.GetConnection(grpcServerConfig.Address)
 		if err != nil {
 			t.Fatal(err)

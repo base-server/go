@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/heaven-chp/base-server-go/config"
+	"github.com/heaven-chp/common-library-go/file"
 	"github.com/heaven-chp/common-library-go/http"
 )
 
@@ -38,13 +40,20 @@ func TestMain3(t *testing.T) {
 	var condition atomic.Bool
 	condition.Store(false)
 
-	go func() {
-		path, err := os.Getwd()
-		if err != nil {
-			t.Error(err)
-		}
+	path, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	configFile := path + "/../config/HttpServer.config"
 
-		os.Args = []string{"test", "-config_file=" + path + "/../config/HttpServer.config"}
+	if httpServerConfig, err := config.Get[config.HttpServer](configFile); err != nil {
+		t.Fatal(err)
+	} else {
+		defer file.Remove(httpServerConfig.Log.File.Name + "." + httpServerConfig.Log.File.ExtensionName)
+	}
+
+	go func() {
+		os.Args = []string{"test", "-config_file=" + configFile}
 		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 		condition.Store(true)
@@ -96,7 +105,7 @@ func TestMain3(t *testing.T) {
 		}
 	}
 
-	err := syscall.Kill(os.Getpid(), syscall.SIGTERM)
+	err = syscall.Kill(os.Getpid(), syscall.SIGTERM)
 	if err != nil {
 		t.Error(err)
 	}

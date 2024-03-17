@@ -7,38 +7,40 @@ import (
 )
 
 func TestSocketServer(t *testing.T) {
-	socketServerConfig := config.SocketServer{}
-
-	err := config.Parsing(&socketServerConfig, "./SocketServer.config")
+	socketServerConfig, err := config.Get[config.SocketServer]("./SocketServer.config")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	if socketServerConfig.Address != ":20000" {
-		t.Errorf("invalid data - Address : (%s)", socketServerConfig.Address)
+		t.Fatal("invalid -", socketServerConfig.Address)
 	}
 
 	if socketServerConfig.ClientPoolSize != 1024 {
-		t.Errorf("invalid data - ClientPoolSize : (%d)", socketServerConfig.ClientPoolSize)
+		t.Fatal("invalid -", socketServerConfig.ClientPoolSize)
 	}
 
-	if socketServerConfig.Log.Level != "DEBUG" {
-		t.Errorf("invalid data - Log.Level : (%s)", socketServerConfig.Log.Level)
+	if socketServerConfig.Log.Level != "debug" {
+		t.Fatal("invalid -", socketServerConfig.Log.Level)
 	}
 
-	if socketServerConfig.Log.OutputPath != "./log/" {
-		t.Errorf("invalid data - Log.OutputPath : (%s)", socketServerConfig.Log.OutputPath)
+	if socketServerConfig.Log.Output != "file" {
+		t.Fatal("invalid -", socketServerConfig.Log.Output)
 	}
 
-	if socketServerConfig.Log.FileNamePrefix != "socket-server" {
-		t.Errorf("invalid data - Log.FileNamePrefix : (%s)", socketServerConfig.Log.FileNamePrefix)
+	if socketServerConfig.Log.File.Name != "./socket-server" {
+		t.Fatal("invalid -", socketServerConfig.Log.File.Name)
 	}
 
-	if socketServerConfig.Log.PrintCallerInfo != true {
-		t.Errorf("invalid data - Log.PrintCallerInfo : (%t)", socketServerConfig.Log.PrintCallerInfo)
+	if socketServerConfig.Log.File.ExtensionName != "log" {
+		t.Fatal("invalid -", socketServerConfig.Log.File.ExtensionName)
 	}
 
-	if socketServerConfig.Log.ChannelSize != 1024 {
-		t.Errorf("invalid data - Log.ChannelSize : (%d)", socketServerConfig.Log.ChannelSize)
+	if socketServerConfig.Log.File.AddDate {
+		t.Fatal("invalid -", socketServerConfig.Log.File.AddDate)
+	}
+
+	if socketServerConfig.Log.WithCallerInfo == false {
+		t.Fatal("invalid -", socketServerConfig.Log.WithCallerInfo)
 	}
 }

@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"strconv"
 	"sync"
@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/heaven-chp/base-server-go/config"
+	"github.com/heaven-chp/common-library-go/file"
 	"github.com/heaven-chp/common-library-go/socket"
 )
 
@@ -44,6 +45,12 @@ func TestMain3(t *testing.T) {
 	}
 	configFile := path + "/../config/SocketServer.config"
 
+	socketServerConfig, err := config.Get[config.SocketServer](configFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Remove(socketServerConfig.Log.File.Name + "." + socketServerConfig.Log.File.ExtensionName)
+
 	sleep := atomic.Bool{}
 	sleep.Store(true)
 	condition := atomic.Bool{}
@@ -67,12 +74,6 @@ func TestMain3(t *testing.T) {
 		client := socket.Client{}
 		defer client.Close()
 
-		socketServerConfig := config.SocketServer{}
-		err := config.Parsing(&socketServerConfig, configFile)
-		if err != nil {
-			t.Fatal(err)
-		}
-
 		err = client.Connect("tcp", socketServerConfig.Address)
 		if err != nil {
 			t.Fatal(err)
@@ -86,7 +87,7 @@ func TestMain3(t *testing.T) {
 			t.Fatalf("invalid data - (%s)", readData)
 		}
 
-		writeData := "test-" + strconv.Itoa(rand.Intn(1000))
+		writeData := "test-" + strconv.Itoa(rand.IntN(1000))
 		_, err = client.Write(writeData)
 		if err != nil {
 			t.Fatal(err)

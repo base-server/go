@@ -1,9 +1,10 @@
-package main
+package handler
 
 import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/heaven-chp/base-server-go/http-server/log"
 	"github.com/heaven-chp/common-library-go/json"
 )
 
@@ -34,17 +35,15 @@ type Test struct {
 // @Failure default {object} ResponseFailure
 // @Router /v1/test/{id} [get]
 // @tags test
-func testGet(w http.ResponseWriter, r *http.Request) {
-	log_instance().Debugf("[%s] [%s] start", r.RequestURI, r.Method)
-	defer log_instance().Debugf("[%s] [%s] end", r.RequestURI, r.Method)
+func Get(w http.ResponseWriter, r *http.Request) {
+	log.Server.Debug("handler start", "uri", r.RequestURI, "method", r.Method)
+	defer log.Server.Debug("handler end", "uri", r.RequestURI, "method", r.Method)
 
-	log_instance().Debugf("header-1 : (%s)", r.Header.Get("header-1"))
+	log.Server.Debug("header", "header-1", r.Header.Get("header-1"))
 
-	log_instance().Debugf("id : (%s)", mux.Vars(r)["id"])
+	log.Server.Debug("path", "id", mux.Vars(r)["id"])
 
-	log_instance().Debugf("param-1 : (%s)", r.URL.Query().Get("param-1"))
-	log_instance().Debugf("param-2 : (%s)", r.URL.Query().Get("param-2"))
-	log_instance().Debugf("param-3 : (%s)", r.URL.Query().Get("param-3"))
+	log.Server.Debug("parameter", "param-1", r.URL.Query().Get("param-1"), "param-2", r.URL.Query().Get("param-2"), "param-3", r.URL.Query().Get("param-3"))
 
 	body, err := json.ToString(Test{ID: mux.Vars(r)["id"], Field1: 1, Field2: "value-2"})
 	if err != nil {
@@ -65,7 +64,7 @@ func testGet(w http.ResponseWriter, r *http.Request) {
 // @Failure default {object} ResponseFailure
 // @Router /v1/test [post]
 // @tags test
-func testPost(w http.ResponseWriter, r *http.Request) {
+func Post(w http.ResponseWriter, r *http.Request) {
 	body, err := json.ToString(ResponseSuccess{Field1: "value-1"})
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -86,6 +85,6 @@ func testPost(w http.ResponseWriter, r *http.Request) {
 // @Failure default {object} ResponseFailure
 // @Router /v1/test/{id} [delete]
 // @tags test
-func testDelete(w http.ResponseWriter, r *http.Request) {
+func Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }

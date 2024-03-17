@@ -12,12 +12,12 @@ import (
 	"time"
 
 	"github.com/heaven-chp/base-server-go/config"
+	"github.com/heaven-chp/common-library-go/file"
 	long_polling "github.com/heaven-chp/common-library-go/long-polling"
 )
 
 func subscription(t *testing.T, configFile string, request long_polling.SubscriptionRequest, count int, data string) (int64, string) {
-	longPollingServerConfig := config.LongPollingServer{}
-	err := config.Parsing(&longPollingServerConfig, configFile)
+	longPollingServerConfig, err := config.Get[config.LongPollingServer](configFile)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,8 +49,7 @@ func subscription(t *testing.T, configFile string, request long_polling.Subscrip
 }
 
 func publish(t *testing.T, configFile, category, data string) {
-	longPollingServerConfig := config.LongPollingServer{}
-	err := config.Parsing(&longPollingServerConfig, configFile)
+	longPollingServerConfig, err := config.Get[config.LongPollingServer](configFile)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -98,6 +97,12 @@ func TestMain3(t *testing.T) {
 		t.Fatal(err)
 	}
 	configFile := path + "/../config/LongPollingServer.config"
+
+	if longPollingServerConfig, err := config.Get[config.LongPollingServer](configFile); err != nil {
+		t.Fatal(err)
+	} else {
+		defer file.Remove(longPollingServerConfig.Log.File.Name + "." + longPollingServerConfig.Log.File.ExtensionName)
+	}
 
 	condition := atomic.Bool{}
 	condition.Store(false)

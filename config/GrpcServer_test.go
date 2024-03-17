@@ -7,34 +7,36 @@ import (
 )
 
 func TestGrpcServer(t *testing.T) {
-	grpcServerConfig := config.GrpcServer{}
-
-	err := config.Parsing(&grpcServerConfig, "./GrpcServer.config")
+	grpcServerConfig, err := config.Get[config.GrpcServer]("./GrpcServer.config")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	if grpcServerConfig.Address != ":50051" {
-		t.Errorf("invalid data - Address : (%s)", grpcServerConfig.Address)
+		t.Fatal("invalid -", grpcServerConfig.Address)
 	}
 
-	if grpcServerConfig.Log.Level != "DEBUG" {
-		t.Errorf("invalid data - Log.Level : (%s)", grpcServerConfig.Log.Level)
+	if grpcServerConfig.Log.Level != "debug" {
+		t.Fatal("invalid -", grpcServerConfig.Log.Level)
 	}
 
-	if grpcServerConfig.Log.OutputPath != "./log/" {
-		t.Errorf("invalid data - Log.OutputPath : (%s)", grpcServerConfig.Log.OutputPath)
+	if grpcServerConfig.Log.Output != "file" {
+		t.Fatal("invalid -", grpcServerConfig.Log.Output)
 	}
 
-	if grpcServerConfig.Log.FileNamePrefix != "grpc-server" {
-		t.Errorf("invalid data - Log.FileNamePrefix : (%s)", grpcServerConfig.Log.FileNamePrefix)
+	if grpcServerConfig.Log.File.Name != "./grpc-server" {
+		t.Fatal("invalid -", grpcServerConfig.Log.File.Name)
 	}
 
-	if grpcServerConfig.Log.PrintCallerInfo != true {
-		t.Errorf("invalid data - Log.PrintCallerInfo : (%t)", grpcServerConfig.Log.PrintCallerInfo)
+	if grpcServerConfig.Log.File.ExtensionName != "log" {
+		t.Fatal("invalid -", grpcServerConfig.Log.File.ExtensionName)
 	}
 
-	if grpcServerConfig.Log.ChannelSize != 1024 {
-		t.Errorf("invalid data - Log.ChannelSize : (%d)", grpcServerConfig.Log.ChannelSize)
+	if grpcServerConfig.Log.File.AddDate {
+		t.Fatal("invalid -", grpcServerConfig.Log.File.AddDate)
+	}
+
+	if grpcServerConfig.Log.WithCallerInfo == false {
+		t.Fatal("invalid -", grpcServerConfig.Log.WithCallerInfo)
 	}
 }

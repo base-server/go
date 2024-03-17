@@ -1,5 +1,13 @@
 # base-server-go
 
+## Features
+ - grpc
+ - http
+ - long-polling
+ - socket
+
+<br/>
+
 ## How to add config
  - json type config file add
    - see [config/Sample.config](https://github.com/heaven-chp/base-server-go/blob/main/config/Sample.config)
@@ -19,30 +27,30 @@
    - run
      - `./bin/grpc-server -config_file ./config/GrpcServer.config`
    - log
-     - `./log/grpc-server_YYYYMMDD.log`
+     - `./grpc-server.log`
  - http
    - build
-     - `go install github.com/swaggo/swag/cmd/swag@v1.16.1`
+     - `go install github.com/swaggo/swag/cmd/swag@v1.16.3`
      - `$(go env GOPATH)/bin/swag init --dir ./http-server --output ./http-server/swagger_docs`
      - `go build -o ./bin/http-server ./http-server/`
    - run
      - `./bin/http-server -config_file ./config/HttpServer.config`
    - log
-     - `./log/http-server_YYYYMMDD.log`
+     - `./http-server.log`
  - long-polling
    - build
      - `go build -o ./bin/long-polling-server ./long-polling-server/`
    - run
      - `./bin/long-polling-server -config_file ./config/LongPollingServer.config`
    - log
-     - `./log/long-polling-server_YYYYMMDD.log`
+     - `./long-polling-server.log`
  - socket
    - build
      - `go build -o ./bin/socket-server ./socket-server/`
    - run
      - `./bin/socket-server -config_file ./config/SocketServer.config`
    - log
-     - `./log/socket-server_YYYYMMDD.log`
+     - `./socket-server.log`
 
 <br/>
 

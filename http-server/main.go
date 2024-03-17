@@ -6,27 +6,16 @@ import (
 	net_http "net/http"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 
 	"github.com/heaven-chp/base-server-go/config"
+	"github.com/heaven-chp/base-server-go/http-server/handler"
+	"github.com/heaven-chp/base-server-go/http-server/log"
 	"github.com/heaven-chp/base-server-go/http-server/swagger_docs"
-	command_line_argument "github.com/heaven-chp/common-library-go/command-line-argument"
+	command_line_flag "github.com/heaven-chp/common-library-go/command-line/flag"
 	"github.com/heaven-chp/common-library-go/http"
-	log "github.com/heaven-chp/common-library-go/log/file"
-	httpSwagger "github.com/swaggo/http-swagger"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
-
-var onceForLog sync.Once
-var fileLog *log.FileLog
-
-func log_instance() *log.FileLog {
-	onceForLog.Do(func() {
-		fileLog = &log.FileLog{}
-	})
-
-	return fileLog
-}
 
 type Main struct {
 	server           http.Server
@@ -69,7 +58,7 @@ func (this *Main) finalize() error {
 }
 
 func (this *Main) initializeFlag() error {
-	err := command_line_argument.Set([]command_line_argument.CommandLineArgumentInfo{
+	err := command_line_flag.Parse([]command_line_flag.FlagInfo{
 		{FlagName: "config_file", Usage: "config/HttpServer.config", DefaultValue: string("")},
 	})
 	if err != nil {
@@ -85,16 +74,20 @@ func (this *Main) initializeFlag() error {
 }
 
 func (this *Main) initializeConfig() error {
-	return config.Parsing(&this.httpServerConfig, command_line_argument.Get("config_file").(string))
+	fileName := command_line_flag.Get[string]("config_file")
+
+	if httpServerConfig, err := config.Get[config.HttpServer](fileName); err != nil {
+		return err
+	} else {
+		this.httpServerConfig = httpServerConfig
+		return nil
+	}
 }
 
 func (this *Main) initializeLog() error {
-	return log_instance().Initialize(log.Setting{
-		Level:           this.httpServerConfig.Log.Level,
-		OutputPath:      this.httpServerConfig.Log.OutputPath,
-		FileNamePrefix:  this.httpServerConfig.Log.FileNamePrefix,
-		PrintCallerInfo: this.httpServerConfig.Log.PrintCallerInfo,
-		ChannelSize:     this.httpServerConfig.Log.ChannelSize})
+	log.Initialize(this.httpServerConfig)
+
+	return nil
 }
 
 func (this *Main) initializeSwagger() error {
@@ -110,15 +103,16 @@ func (this *Main) initializeSwagger() error {
 func (this *Main) initializeServer() error {
 	this.server.AddPathPrefixHandler(this.httpServerConfig.SwaggerUri, httpSwagger.WrapHandler)
 
-	this.server.AddHandler("/v1/test/{id:[a-z,A-Z][a-z,A-Z,0-9,--,_,.]+}", net_http.MethodGet, testGet)
-	this.server.AddHandler("/v1/test", net_http.MethodPost, testPost)
-	this.server.AddHandler("/v1/test/{id:[a-z,A-Z][a-z,A-Z,0-9,--,_,.]+}", net_http.MethodDelete, testDelete)
+	this.server.AddHandler("/v1/test/{id:[a-z,A-Z][a-z,A-Z,0-9,--,_,.]+}", net_http.MethodGet, handler.Get)
+	this.server.AddHandler("/v1/test", net_http.MethodPost, handler.Post)
+	this.server.AddHandler("/v1/test/{id:[a-z,A-Z][a-z,A-Z,0-9,--,_,.]+}", net_http.MethodDelete, handler.Delete)
 
-	return this.server.Start(this.httpServerConfig.ServerAddress, func(err error) { log_instance().Error(err) })
+	return this.server.Start(this.httpServerConfig.ServerAddress, func(err error) { log.Server.Error(err.Error()) })
 }
 
 func (this *Main) finalizeLog() error {
-	return log_instance().Finalize()
+	log.Server.Flush()
+	return nil
 }
 
 func (this *Main) finalizeServer() error {
@@ -132,13 +126,13 @@ func (this *Main) Run() error {
 	}
 	defer this.finalize()
 
-	log_instance().Info("process start")
-	defer log_instance().Info("process end")
+	log.Server.Info("process start")
+	defer log.Server.Info("process end")
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
-	log_instance().Infof("signal : (%s)", <-signals)
+	log.Server.Info("signal", "kind", <-signals)
 
 	return nil
 }
@@ -147,6 +141,6 @@ func main() {
 	main := Main{}
 	err := main.Run()
 	if err != nil {
-		log_instance().Error(err)
+		log.Server.Error(err.Error())
 	}
 }
