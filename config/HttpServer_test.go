@@ -7,46 +7,48 @@ import (
 )
 
 func TestHttpServer(t *testing.T) {
-	var httpServerConfig config.HttpServer
-
-	err := config.Parsing(&httpServerConfig, "./HttpServer.config")
+	httpServerConfig, err := config.Get[config.HttpServer]("./HttpServer.config")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	if httpServerConfig.SwaggerAddress != "127.0.0.1:10000" {
-		t.Errorf("invalid data - SwaggerAddress : (%s)", httpServerConfig.SwaggerAddress)
+		t.Fatal("invalid -", httpServerConfig.SwaggerAddress)
 	}
 
 	if httpServerConfig.SwaggerUri != "/swagger/" {
-		t.Errorf("invalid data - SwaggerUri : (%s)", httpServerConfig.SwaggerUri)
+		t.Fatal("invalid -", httpServerConfig.SwaggerUri)
 	}
 
 	if httpServerConfig.ServerAddress != ":10000" {
-		t.Errorf("invalid data - ServerAddress : (%s)", httpServerConfig.ServerAddress)
+		t.Fatal("invalid -", httpServerConfig.ServerAddress)
 	}
 
 	if httpServerConfig.ShutdownTimeout != 10 {
-		t.Errorf("invalid data - ShutdownTimeout : (%d)", httpServerConfig.ShutdownTimeout)
+		t.Fatal("invalid -", httpServerConfig.ShutdownTimeout)
 	}
 
-	if httpServerConfig.Log.Level != "DEBUG" {
-		t.Errorf("invalid data - Log.Level : (%s)", httpServerConfig.Log.Level)
+	if httpServerConfig.Log.Level != "debug" {
+		t.Fatal("invalid -", httpServerConfig.Log.Level)
 	}
 
-	if httpServerConfig.Log.OutputPath != "./log/" {
-		t.Errorf("invalid data - Log.OutputPath : (%s)", httpServerConfig.Log.OutputPath)
+	if httpServerConfig.Log.Output != "file" {
+		t.Fatal("invalid -", httpServerConfig.Log.Output)
 	}
 
-	if httpServerConfig.Log.FileNamePrefix != "http-server" {
-		t.Errorf("invalid data - Log.FileNamePrefix : (%s)", httpServerConfig.Log.FileNamePrefix)
+	if httpServerConfig.Log.File.Name != "./http-server" {
+		t.Fatal("invalid -", httpServerConfig.Log.File.Name)
 	}
 
-	if httpServerConfig.Log.PrintCallerInfo != true {
-		t.Errorf("invalid data - Log.PrintCallerInfo : (%t)", httpServerConfig.Log.PrintCallerInfo)
+	if httpServerConfig.Log.File.ExtensionName != "log" {
+		t.Fatal("invalid -", httpServerConfig.Log.File.ExtensionName)
 	}
 
-	if httpServerConfig.Log.ChannelSize != 1024 {
-		t.Errorf("invalid data - Log.ChannelSize : (%d)", httpServerConfig.Log.ChannelSize)
+	if httpServerConfig.Log.File.AddDate {
+		t.Fatal("invalid -", httpServerConfig.Log.File.AddDate)
+	}
+
+	if httpServerConfig.Log.WithCallerInfo == false {
+		t.Fatal("invalid -", httpServerConfig.Log.WithCallerInfo)
 	}
 }

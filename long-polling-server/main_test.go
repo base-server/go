@@ -12,12 +12,12 @@ import (
 	"time"
 
 	"github.com/heaven-chp/base-server-go/config"
+	"github.com/heaven-chp/common-library-go/file"
 	long_polling "github.com/heaven-chp/common-library-go/long-polling"
 )
 
 func subscription(t *testing.T, configFile string, request long_polling.SubscriptionRequest, count int, data string) (int64, string) {
-	longPollingServerConfig := config.LongPollingServer{}
-	err := config.Parsing(&longPollingServerConfig, configFile)
+	longPollingServerConfig, err := config.Get[config.LongPollingServer](configFile)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,8 +49,7 @@ func subscription(t *testing.T, configFile string, request long_polling.Subscrip
 }
 
 func publish(t *testing.T, configFile, category, data string) {
-	longPollingServerConfig := config.LongPollingServer{}
-	err := config.Parsing(&longPollingServerConfig, configFile)
+	longPollingServerConfig, err := config.Get[config.LongPollingServer](configFile)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -74,10 +73,8 @@ func TestMain1(t *testing.T) {
 	os.Args = []string{"test"}
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
-	main := Main{}
-	err := main.Run()
-	if err.Error() != "invalid flag" {
-		t.Error(err)
+	if err := (&Main{}).Run(); err.Error() != "invalid flag" {
+		t.Fatal(err)
 	}
 }
 
@@ -85,10 +82,8 @@ func TestMain2(t *testing.T) {
 	os.Args = []string{"test", "-config_file=invalid"}
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
-	main := Main{}
-	err := main.Run()
-	if err.Error() != "open invalid: no such file or directory" {
-		t.Error(err)
+	if err := (&Main{}).Run(); err.Error() != "open invalid: no such file or directory" {
+		t.Fatal(err)
 	}
 }
 
@@ -98,6 +93,12 @@ func TestMain3(t *testing.T) {
 		t.Fatal(err)
 	}
 	configFile := path + "/../config/LongPollingServer.config"
+
+	if longPollingServerConfig, err := config.Get[config.LongPollingServer](configFile); err != nil {
+		t.Fatal(err)
+	} else {
+		defer file.Remove(longPollingServerConfig.Log.File.Name + "." + longPollingServerConfig.Log.File.ExtensionName)
+	}
 
 	condition := atomic.Bool{}
 	condition.Store(false)
@@ -132,10 +133,10 @@ func TestMain3(t *testing.T) {
 
 	wg.Wait()
 
-	err = syscall.Kill(os.Getpid(), syscall.SIGTERM)
-	if err != nil {
-		t.Error(err)
+	if err := syscall.Kill(os.Getpid(), syscall.SIGTERM); err != nil {
+		t.Fatal(err)
 	}
+
 	for condition.Load() {
 		time.Sleep(100 * time.Millisecond)
 	}

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/heaven-chp/base-server-go/config"
+	"github.com/heaven-chp/common-library-go/file"
 	"github.com/heaven-chp/common-library-go/grpc"
 	"github.com/heaven-chp/common-library-go/grpc/sample"
 )
@@ -18,10 +19,8 @@ func TestMain1(t *testing.T) {
 	os.Args = []string{"test"}
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
-	main := Main{}
-	err := main.Run()
-	if err.Error() != "invalid flag" {
-		t.Error(err)
+	if err := (&Main{}).Run(); err.Error() != "invalid flag" {
+		t.Fatal(err)
 	}
 }
 
@@ -29,10 +28,8 @@ func TestMain2(t *testing.T) {
 	os.Args = []string{"test", "-config_file=invalid"}
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
-	main := Main{}
-	err := main.Run()
-	if err.Error() != "open invalid: no such file or directory" {
-		t.Error(err)
+	if err := (&Main{}).Run(); err.Error() != "open invalid: no such file or directory" {
+		t.Fatal(err)
 	}
 }
 
@@ -42,6 +39,12 @@ func TestMain3(t *testing.T) {
 		t.Fatal(err)
 	}
 	configFile := path + "/../config/GrpcServer.config"
+
+	grpcServerConfig, err := config.Get[config.GrpcServer](configFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Remove(grpcServerConfig.Log.File.Name + "." + grpcServerConfig.Log.File.ExtensionName)
 
 	condition := atomic.Bool{}
 	condition.Store(true)
@@ -55,13 +58,7 @@ func TestMain3(t *testing.T) {
 	}()
 	time.Sleep(200 * time.Millisecond)
 
-	{
-		grpcServerConfig := config.GrpcServer{}
-		err := config.Parsing(&grpcServerConfig, configFile)
-		if err != nil {
-			t.Fatal(err)
-		}
-
+	func() {
 		connection, err := grpc.GetConnection(grpcServerConfig.Address)
 		if err != nil {
 			t.Fatal(err)
@@ -72,20 +69,18 @@ func TestMain3(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
-		reply, err := client.Func1(ctx, &sample.Request{Data1: 1, Data2: "abc"})
-		if err != nil {
-			t.Fatal(err)
-		}
 
-		if reply.Data1 != 1 || reply.Data2 != "abc" {
+		if reply, err := client.Func1(ctx, &sample.Request{Data1: 1, Data2: "abc"}); err != nil {
+			t.Fatal(err)
+		} else if reply.Data1 != 1 || reply.Data2 != "abc" {
 			t.Fatalf("invalid reply - (%d)(%s)", reply.Data1, reply.Data2)
 		}
+	}()
+
+	if err := syscall.Kill(os.Getpid(), syscall.SIGTERM); err != nil {
+		t.Fatal(err)
 	}
 
-	err = syscall.Kill(os.Getpid(), syscall.SIGTERM)
-	if err != nil {
-		t.Error(err)
-	}
 	for condition.Load() {
 		time.Sleep(100 * time.Millisecond)
 	}
