@@ -19,53 +19,34 @@ type Main struct {
 	longPollingServerConfig config.LongPollingServer
 }
 
-func (this *Main) Initialize() error {
-	err := this.initializeFlag()
-	if err != nil {
+func (this *Main) initialize() error {
+	if err := this.parseFlag(); err != nil {
 		return err
-	}
-
-	err = this.initializeConfig()
-	if err != nil {
+	} else if err := this.setConfig(); err != nil {
 		return err
-	}
+	} else {
+		log.Initialize(this.longPollingServerConfig)
 
-	err = this.initializeLog()
-	if err != nil {
-		return err
-	}
-
-	err = this.initializeServer()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (this *Main) Finalize() error {
-	defer this.finalizeLog()
-
-	return this.finalizeServer()
-}
-
-func (this *Main) initializeFlag() error {
-	err := command_line_flag.Parse([]command_line_flag.FlagInfo{
-		{FlagName: "config_file", Usage: "config/LongPollingServer.config", DefaultValue: string("")},
-	})
-	if err != nil {
 		return nil
 	}
-
-	if flag.NFlag() != 1 {
-		flag.Usage()
-		return errors.New("invalid flag")
-	}
-
-	return nil
 }
 
-func (this *Main) initializeConfig() error {
+func (this *Main) parseFlag() error {
+	flagInfos := []command_line_flag.FlagInfo{
+		{FlagName: "config_file", Usage: "config/LongPollingServer.config", DefaultValue: string("")},
+	}
+
+	if err := command_line_flag.Parse(flagInfos); err != nil {
+		return nil
+	} else if flag.NFlag() != 1 {
+		flag.Usage()
+		return errors.New("invalid flag")
+	} else {
+		return nil
+	}
+}
+
+func (this *Main) setConfig() error {
 	fileName := command_line_flag.Get[string]("config_file")
 
 	if longPollingServerConfig, err := config.Get[config.LongPollingServer](fileName); err != nil {
@@ -76,19 +57,7 @@ func (this *Main) initializeConfig() error {
 	}
 }
 
-func (this *Main) initializeLog() error {
-	log.Initialize(this.longPollingServerConfig)
-
-	return nil
-}
-
-func (this *Main) finalizeLog() error {
-	log.Server.Flush()
-
-	return nil
-}
-
-func (this *Main) initializeServer() error {
+func (this *Main) startServer() error {
 	serverInfo := long_polling.ServerInfo{
 		Address:                        this.longPollingServerConfig.Address,
 		Timeout:                        this.longPollingServerConfig.Timeout,
@@ -103,41 +72,38 @@ func (this *Main) initializeServer() error {
 		WriteBufferSize:         this.longPollingServerConfig.FilePersistorInfo.WriteBufferSize,
 		WriteFlushPeriodSeconds: this.longPollingServerConfig.FilePersistorInfo.WriteFlushPeriodSeconds}
 
-	err := this.server.Start(serverInfo, filePersistorInfo, func(err error) { log.Server.Error(err.Error()) })
-	if err != nil {
-		panic(err)
-	}
-
-	return nil
+	return this.server.Start(serverInfo, filePersistorInfo, func(err error) { log.Server.Error(err.Error()) })
 }
 
-func (this *Main) finalizeServer() error {
+func (this *Main) stopServer() error {
 	return this.server.Stop(this.longPollingServerConfig.ShutdownTimeout)
 }
 
 func (this *Main) Run() error {
-	err := this.Initialize()
-	if err != nil {
+	defer log.Server.Flush()
+
+	if err := this.initialize(); err != nil {
 		return err
 	}
-	defer this.Finalize()
 
 	log.Server.Info("process start")
 	defer log.Server.Info("process end")
+
+	if err := this.startServer(); err != nil {
+		return err
+	}
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
 	log.Server.Info("signal", "kind", <-signals)
 
-	return nil
+	return this.stopServer()
 }
 
 func main() {
-	main := Main{}
-
-	err := main.Run()
-	if err != nil {
+	if err := (&Main{}).Run(); err != nil {
 		log.Server.Error(err.Error())
+		log.Server.Flush()
 	}
 }

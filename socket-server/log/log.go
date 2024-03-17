@@ -36,6 +36,7 @@ func Initialize(serverConfig config.SocketServer) {
 		name := serverConfig.Log.File.Name
 		extensionName := serverConfig.Log.File.ExtensionName
 		addDate := serverConfig.Log.File.AddDate
+
 		Server.SetOutputToFile(name, extensionName, addDate)
 	}
 

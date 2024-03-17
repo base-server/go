@@ -73,10 +73,8 @@ func TestMain1(t *testing.T) {
 	os.Args = []string{"test"}
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
-	main := Main{}
-	err := main.Run()
-	if err.Error() != "invalid flag" {
-		t.Error(err)
+	if err := (&Main{}).Run(); err.Error() != "invalid flag" {
+		t.Fatal(err)
 	}
 }
 
@@ -84,10 +82,8 @@ func TestMain2(t *testing.T) {
 	os.Args = []string{"test", "-config_file=invalid"}
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
-	main := Main{}
-	err := main.Run()
-	if err.Error() != "open invalid: no such file or directory" {
-		t.Error(err)
+	if err := (&Main{}).Run(); err.Error() != "open invalid: no such file or directory" {
+		t.Fatal(err)
 	}
 }
 
@@ -137,10 +133,10 @@ func TestMain3(t *testing.T) {
 
 	wg.Wait()
 
-	err = syscall.Kill(os.Getpid(), syscall.SIGTERM)
-	if err != nil {
-		t.Error(err)
+	if err := syscall.Kill(os.Getpid(), syscall.SIGTERM); err != nil {
+		t.Fatal(err)
 	}
+
 	for condition.Load() {
 		time.Sleep(100 * time.Millisecond)
 	}

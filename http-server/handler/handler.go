@@ -45,8 +45,7 @@ func Get(w http.ResponseWriter, r *http.Request) {
 
 	log.Server.Debug("parameter", "param-1", r.URL.Query().Get("param-1"), "param-2", r.URL.Query().Get("param-2"), "param-3", r.URL.Query().Get("param-3"))
 
-	body, err := json.ToString(Test{ID: mux.Vars(r)["id"], Field1: 1, Field2: "value-2"})
-	if err != nil {
+	if body, err := json.ToString(Test{ID: mux.Vars(r)["id"], Field1: 1, Field2: "value-2"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(`{"Cause":"` + err.Error() + `"}`))
 	} else {
@@ -65,8 +64,7 @@ func Get(w http.ResponseWriter, r *http.Request) {
 // @Router /v1/test [post]
 // @tags test
 func Post(w http.ResponseWriter, r *http.Request) {
-	body, err := json.ToString(ResponseSuccess{Field1: "value-1"})
-	if err != nil {
+	if body, err := json.ToString(ResponseSuccess{Field1: "value-1"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(`{"Cause":"` + err.Error() + `"}`))
 	} else {

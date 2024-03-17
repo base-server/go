@@ -19,53 +19,34 @@ type Main struct {
 	grpcServerConfig config.GrpcServer
 }
 
-func (this *Main) Initialize() error {
-	err := this.initializeFlag()
-	if err != nil {
+func (this *Main) initialize() error {
+	if err := this.parseFlag(); err != nil {
 		return err
-	}
-
-	err = this.initializeConfig()
-	if err != nil {
+	} else if err := this.setConfig(); err != nil {
 		return err
-	}
+	} else {
+		log.Initialize(this.grpcServerConfig)
 
-	err = this.initializeLog()
-	if err != nil {
-		return err
-	}
-
-	err = this.initializeServer()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (this *Main) Finalize() error {
-	defer this.finalizeLog()
-
-	return this.finalizeServer()
-}
-
-func (this *Main) initializeFlag() error {
-	err := command_line_flag.Parse([]command_line_flag.FlagInfo{
-		{FlagName: "config_file", Usage: "config/GrpcServer.config", DefaultValue: string("")},
-	})
-	if err != nil {
 		return nil
 	}
-
-	if flag.NFlag() != 1 {
-		flag.Usage()
-		return errors.New("invalid flag")
-	}
-
-	return nil
 }
 
-func (this *Main) initializeConfig() error {
+func (this *Main) parseFlag() error {
+	flagInfos := []command_line_flag.FlagInfo{
+		{FlagName: "config_file", Usage: "config/GrpcServer.config", DefaultValue: string("")},
+	}
+
+	if err := command_line_flag.Parse(flagInfos); err != nil {
+		return nil
+	} else if flag.NFlag() != 1 {
+		flag.Usage()
+		return errors.New("invalid flag")
+	} else {
+		return nil
+	}
+}
+
+func (this *Main) setConfig() error {
 	fileName := command_line_flag.Get[string]("config_file")
 
 	if grpcServerConfig, err := config.Get[config.GrpcServer](fileName); err != nil {
@@ -76,56 +57,30 @@ func (this *Main) initializeConfig() error {
 	}
 }
 
-func (this *Main) initializeLog() error {
-	log.Initialize(this.grpcServerConfig)
-
-	return nil
-}
-
-func (this *Main) finalizeLog() error {
-	log.Server.Flush()
-
-	return nil
-}
-
-func (this *Main) initializeServer() error {
-	go func() {
-		err := this.server.Start(this.grpcServerConfig.Address, &sample.Server{})
-		if err != nil {
-			panic(err)
-		}
-	}()
-
-	return nil
-}
-
-func (this *Main) finalizeServer() error {
-	return this.server.Stop()
-}
-
 func (this *Main) Run() error {
-	err := this.Initialize()
-	if err != nil {
+	defer log.Server.Flush()
+
+	if err := this.initialize(); err != nil {
 		return err
 	}
-	defer this.Finalize()
 
 	log.Server.Info("process start")
 	defer log.Server.Info("process end")
 
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		signals := make(chan os.Signal, 1)
+		signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+		log.Server.Info("signal", "kind", <-signals)
 
-	log.Server.Info("signal", "kind", <-signals)
+		this.server.Stop()
+	}()
 
-	return nil
+	return this.server.Start(this.grpcServerConfig.Address, &sample.Server{})
 }
 
 func main() {
-	main := Main{}
-
-	err := main.Run()
-	if err != nil {
+	if err := (&Main{}).Run(); err != nil {
 		log.Server.Error(err.Error())
+		log.Server.Flush()
 	}
 }

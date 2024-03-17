@@ -20,10 +20,8 @@ func TestMain1(t *testing.T) {
 	os.Args = []string{"test"}
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
-	main := Main{}
-	err := main.Run()
-	if err.Error() != "invalid flag" {
-		t.Error(err)
+	if err := (&Main{}).Run(); err.Error() != "invalid flag" {
+		t.Fatal(err)
 	}
 }
 
@@ -31,10 +29,8 @@ func TestMain2(t *testing.T) {
 	os.Args = []string{"test", "-config_file=invalid"}
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
-	main := Main{}
-	err := main.Run()
-	if err.Error() != "open invalid: no such file or directory" {
-		t.Error(err)
+	if err := (&Main{}).Run(); err.Error() != "open invalid: no such file or directory" {
+		t.Fatal(err)
 	}
 }
 
@@ -74,30 +70,24 @@ func TestMain3(t *testing.T) {
 		client := socket.Client{}
 		defer client.Close()
 
-		err = client.Connect("tcp", socketServerConfig.Address)
-		if err != nil {
+		if err := client.Connect("tcp", socketServerConfig.Address); err != nil {
 			t.Fatal(err)
 		}
 
-		readData, err := client.Read(1024)
-		if err != nil {
+		if readData, err := client.Read(1024); err != nil {
 			t.Fatal(err)
-		}
-		if readData != "greeting" {
+		} else if readData != "greeting" {
 			t.Fatalf("invalid data - (%s)", readData)
 		}
 
 		writeData := "test-" + strconv.Itoa(rand.IntN(1000))
-		_, err = client.Write(writeData)
-		if err != nil {
+		if _, err = client.Write(writeData); err != nil {
 			t.Fatal(err)
 		}
 
-		readData, err = client.Read(1024)
-		if err != nil {
+		if readData, err := client.Read(1024); err != nil {
 			t.Fatal(err)
-		}
-		if readData != "[response] "+writeData {
+		} else if readData != "[response] "+writeData {
 			t.Fatalf("invalid data - (%s)", readData)
 		}
 	}
@@ -109,10 +99,10 @@ func TestMain3(t *testing.T) {
 	}
 	wg.Wait()
 
-	err = syscall.Kill(os.Getpid(), syscall.SIGTERM)
-	if err != nil {
-		t.Error(err)
+	if err := syscall.Kill(os.Getpid(), syscall.SIGTERM); err != nil {
+		t.Fatal(err)
 	}
+
 	for condition.Load() {
 		time.Sleep(100 * time.Millisecond)
 	}
