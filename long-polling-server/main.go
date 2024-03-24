@@ -10,7 +10,7 @@ import (
 
 	"github.com/heaven-chp/base-server-go/config"
 	"github.com/heaven-chp/base-server-go/long-polling-server/log"
-	command_line_flag "github.com/heaven-chp/common-library-go/command-line/flag"
+	"github.com/heaven-chp/common-library-go/command-line/flags"
 	long_polling "github.com/heaven-chp/common-library-go/long-polling"
 )
 
@@ -32,12 +32,13 @@ func (this *Main) initialize() error {
 }
 
 func (this *Main) parseFlag() error {
-	flagInfos := []command_line_flag.FlagInfo{
+	flagInfos := []flags.FlagInfo{
 		{FlagName: "config_file", Usage: "config/LongPollingServer.config", DefaultValue: string("")},
 	}
 
-	if err := command_line_flag.Parse(flagInfos); err != nil {
-		return nil
+	if err := flags.Parse(flagInfos); err != nil {
+		flag.Usage()
+		return err
 	} else if flag.NFlag() != 1 {
 		flag.Usage()
 		return errors.New("invalid flag")
@@ -47,7 +48,7 @@ func (this *Main) parseFlag() error {
 }
 
 func (this *Main) setConfig() error {
-	fileName := command_line_flag.Get[string]("config_file")
+	fileName := flags.Get[string]("config_file")
 
 	if longPollingServerConfig, err := config.Get[config.LongPollingServer](fileName); err != nil {
 		return err
