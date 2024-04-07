@@ -1,6 +1,6 @@
 module github.com/base-server/go
 
-go 1.22.1
+go 1.22.0
 
 require (
 	github.com/common-library/go v1.1.5
