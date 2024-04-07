@@ -2,7 +2,7 @@
 package config
 
 import (
-	"github.com/heaven-chp/common-library-go/json"
+	"github.com/common-library/go/json"
 )
 
 func Get[T any](fileName string) (T, error) {

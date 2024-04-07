@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/heaven-chp/base-server-go/config"
-	"github.com/heaven-chp/common-library-go/file"
-	"github.com/heaven-chp/common-library-go/socket"
+	"github.com/base-server/go/config"
+	"github.com/common-library/go/file"
+	"github.com/common-library/go/socket"
 )
 
 func TestMain1(t *testing.T) {

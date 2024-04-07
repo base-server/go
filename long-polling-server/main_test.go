@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/heaven-chp/base-server-go/config"
-	"github.com/heaven-chp/common-library-go/file"
-	long_polling "github.com/heaven-chp/common-library-go/long-polling"
+	"github.com/base-server/go/config"
+	"github.com/common-library/go/file"
+	long_polling "github.com/common-library/go/long-polling"
 )
 
 func subscription(t *testing.T, configFile string, request long_polling.SubscriptionRequest, count int, data string) (int64, string) {

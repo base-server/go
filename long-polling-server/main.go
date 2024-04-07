@@ -8,10 +8,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/heaven-chp/base-server-go/config"
-	"github.com/heaven-chp/base-server-go/long-polling-server/log"
-	"github.com/heaven-chp/common-library-go/command-line/flags"
-	long_polling "github.com/heaven-chp/common-library-go/long-polling"
+	"github.com/base-server/go/config"
+	"github.com/base-server/go/long-polling-server/log"
+	"github.com/common-library/go/command-line/flags"
+	long_polling "github.com/common-library/go/long-polling"
 )
 
 type Main struct {

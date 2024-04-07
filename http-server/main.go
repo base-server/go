@@ -8,12 +8,12 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/heaven-chp/base-server-go/config"
-	"github.com/heaven-chp/base-server-go/http-server/handler"
-	"github.com/heaven-chp/base-server-go/http-server/log"
-	"github.com/heaven-chp/base-server-go/http-server/swagger_docs"
-	"github.com/heaven-chp/common-library-go/command-line/flags"
-	"github.com/heaven-chp/common-library-go/http"
+	"github.com/base-server/go/config"
+	"github.com/base-server/go/http-server/handler"
+	"github.com/base-server/go/http-server/log"
+	"github.com/base-server/go/http-server/swagger_docs"
+	"github.com/common-library/go/command-line/flags"
+	"github.com/common-library/go/http"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
