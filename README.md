@@ -1,4 +1,4 @@
-# base-server-go
+# Base Server for Go
 
 ## Features
  - grpc
@@ -10,13 +10,13 @@
 
 ## How to add config
  - json type config file add
-   - see [config/Sample.config](https://github.com/heaven-chp/base-server-go/blob/main/config/Sample.config)
+   - see [config/Sample.config](https://github.com/base-server/go/blob/main/config/Sample.config)
  - struct add
-   - see [config/Sample.go](https://github.com/heaven-chp/base-server-go/blob/main/config/Sample.go)
+   - see [config/Sample.go](https://github.com/base-server/go/blob/main/config/Sample.go)
  - test add
-   - see [Sample_test.go](https://github.com/heaven-chp/base-server-go/blob/main/config/Sample_test.go)
+   - see [Sample_test.go](https://github.com/base-server/go/blob/main/config/Sample_test.go)
  - example of use
-   - socketServerConfig of [socket-server/main.go](https://github.com/heaven-chp/base-server-go/blob/main/socket-server/main.go)
+   - socketServerConfig of [socket-server/main.go](https://github.com/base-server/go/blob/main/socket-server/main.go)
 
 <br/>
 

@@ -3,7 +3,7 @@ package config_test
 import (
 	"testing"
 
-	"github.com/heaven-chp/base-server-go/config"
+	"github.com/base-server/go/config"
 )
 
 func TestSocketServer(t *testing.T) {

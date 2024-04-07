@@ -8,10 +8,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/heaven-chp/base-server-go/config"
-	"github.com/heaven-chp/base-server-go/socket-server/log"
-	"github.com/heaven-chp/common-library-go/command-line/flags"
-	"github.com/heaven-chp/common-library-go/socket"
+	"github.com/base-server/go/config"
+	"github.com/base-server/go/socket-server/log"
+	"github.com/common-library/go/command-line/flags"
+	"github.com/common-library/go/socket"
 )
 
 type Main struct {
