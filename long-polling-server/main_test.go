@@ -22,7 +22,7 @@ func subscription(t *testing.T, configFile string, request long_polling.Subscrip
 		t.Fatal(err)
 	}
 
-	response, err := long_polling.Subscription("http://"+longPollingServerConfig.Address+"/subscription", nil, request, "", "")
+	response, err := long_polling.Subscription("http://"+longPollingServerConfig.Address+"/subscription", nil, request, "", "", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,7 +55,7 @@ func publish(t *testing.T, configFile, category, data string) {
 	}
 
 	request := long_polling.PublishRequest{Category: category, Data: data}
-	response, err := long_polling.Publish("http://"+longPollingServerConfig.Address+longPollingServerConfig.PublishURI, 10, nil, request, "", "")
+	response, err := long_polling.Publish("http://"+longPollingServerConfig.Address+longPollingServerConfig.PublishURI, 10, nil, request, "", "", nil)
 	if err != nil {
 		t.Fatal(err)
 	}

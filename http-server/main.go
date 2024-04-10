@@ -72,11 +72,11 @@ func (this *Main) setSwaggerInfo() {
 }
 
 func (this *Main) setHandler() {
-	this.server.AddPathPrefixHandler(this.httpServerConfig.SwaggerUri, httpSwagger.WrapHandler)
+	this.server.RegisterPathPrefixHandler(this.httpServerConfig.SwaggerUri, httpSwagger.WrapHandler)
 
-	this.server.AddHandler("/v1/test/{id:[a-z,A-Z][a-z,A-Z,0-9,--,_,.]+}", net_http.MethodGet, handler.Get)
-	this.server.AddHandler("/v1/test", net_http.MethodPost, handler.Post)
-	this.server.AddHandler("/v1/test/{id:[a-z,A-Z][a-z,A-Z,0-9,--,_,.]+}", net_http.MethodDelete, handler.Delete)
+	this.server.RegisterHandlerFunc("/v1/test/{id:[a-z,A-Z][a-z,A-Z,0-9,--,_,.]+}", net_http.MethodGet, handler.Get)
+	this.server.RegisterHandlerFunc("/v1/test", net_http.MethodPost, handler.Post)
+	this.server.RegisterHandlerFunc("/v1/test/{id:[a-z,A-Z][a-z,A-Z,0-9,--,_,.]+}", net_http.MethodDelete, handler.Delete)
 }
 
 func (this *Main) startServer() error {

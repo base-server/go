@@ -1,9 +1,11 @@
 package config
 
+import "time"
+
 type LongPollingServer struct {
-	Address         string `json:"address"`
-	Timeout         int    `json:"timeout"`
-	ShutdownTimeout uint64 `json:"shutdownTimeout"`
+	Address         string        `json:"address"`
+	Timeout         int           `json:"timeout"`
+	ShutdownTimeout time.Duration `json:"shutdownTimeout"`
 
 	SubscriptionURI string `json:"subscription_uri"`
 	PublishURI      string `json:"publish_uri"`
