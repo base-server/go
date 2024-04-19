@@ -2,17 +2,17 @@ package config
 
 type LongPollingServer struct {
 	Address         string `json:"address"`
-	Timeout         int    `json:"timeout"`
-	ShutdownTimeout uint64 `json:"shutdownTimeout"`
+	TimeoutSeconds  int    `json:"timeoutSeconds"`
+	ShutdownTimeout string `json:"shutdownTimeout"`
 
-	SubscriptionURI string `json:"subscription_uri"`
-	PublishURI      string `json:"publish_uri"`
+	SubscriptionURI string `json:"subscriptionUri"`
+	PublishURI      string `json:"publishUri"`
 
 	FilePersistorInfo struct {
 		Use                     bool   `json:"use"`
-		FileName                string `json:"file_name"`
-		WriteBufferSize         int    `json:"write_buffer_size"`
-		WriteFlushPeriodSeconds int    `json:"write_flush_period_seconds"`
+		FileName                string `json:"fileName"`
+		WriteBufferSize         int    `json:"writeBufferSize"`
+		WriteFlushPeriodSeconds int    `json:"writeFlushPeriodSeconds"`
 	} `json:"file_persistor_info"`
 
 	Log struct {

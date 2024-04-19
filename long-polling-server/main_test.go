@@ -22,7 +22,7 @@ func subscription(t *testing.T, configFile string, request long_polling.Subscrip
 		t.Fatal(err)
 	}
 
-	response, err := long_polling.Subscription("http://"+longPollingServerConfig.Address+"/subscription", nil, request, "", "")
+	response, err := long_polling.Subscription("http://"+longPollingServerConfig.Address+"/subscription", nil, request, "", "", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,7 +55,7 @@ func publish(t *testing.T, configFile, category, data string) {
 	}
 
 	request := long_polling.PublishRequest{Category: category, Data: data}
-	response, err := long_polling.Publish("http://"+longPollingServerConfig.Address+longPollingServerConfig.PublishURI, 10, nil, request, "", "")
+	response, err := long_polling.Publish("http://"+longPollingServerConfig.Address+longPollingServerConfig.PublishURI, 10, nil, request, "", "", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -119,11 +119,11 @@ func TestMain3(t *testing.T) {
 		defer wg.Done()
 
 		publish(t, configFile, category, data)
-		timestamp, id := subscription(t, configFile, long_polling.SubscriptionRequest{Category: category, Timeout: 300, SinceTime: 1}, 1, data)
+		timestamp, id := subscription(t, configFile, long_polling.SubscriptionRequest{Category: category, TimeoutSeconds: 300, SinceTime: 1}, 1, data)
 
 		publish(t, configFile, category, data)
 		publish(t, configFile, category, data)
-		subscription(t, configFile, long_polling.SubscriptionRequest{Category: category, Timeout: 300, SinceTime: timestamp, LastID: id}, 2, data)
+		subscription(t, configFile, long_polling.SubscriptionRequest{Category: category, TimeoutSeconds: 300, SinceTime: timestamp, LastID: id}, 2, data)
 	}
 
 	for i := 0; i < 10; i++ {

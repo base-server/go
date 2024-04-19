@@ -21,6 +21,11 @@
 <br/>
 
 ## How to use server
+ - cloudevents
+   - build
+     - `go build -o ./bin/cloudevents-server ./cloudevents-server/`
+   - run
+     - `./bin/cloudevents-server -config-file ./config/CloudEventsServer.config`
  - grpc
    - build
      - `go build -o ./bin/grpc-server ./grpc-server/`

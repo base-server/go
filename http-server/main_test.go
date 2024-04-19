@@ -60,7 +60,7 @@ func TestMain3(t *testing.T) {
 		time.Sleep(100 * time.Millisecond)
 	}
 
-	if response, err := http.Request("http://127.0.0.1:10000/v1/test/id-01?param-1=value-1&param-2=2&param-3=3.3", net_http.MethodGet, map[string][]string{"header-1": {"value-1"}}, "", 3, "", ""); err != nil {
+	if response, err := http.Request("http://127.0.0.1:10000/v1/test/id-01?param-1=value-1&param-2=2&param-3=3.3", net_http.MethodGet, map[string][]string{"header-1": {"value-1"}}, "", 3, "", "", nil); err != nil {
 		t.Fatal(err)
 	} else if response.StatusCode != net_http.StatusOK {
 		t.Fatalf("invalid StatusCode - (%d)", response.StatusCode)
@@ -68,7 +68,7 @@ func TestMain3(t *testing.T) {
 		t.Fatalf("invalid Body - (%s)", response.Body)
 	}
 
-	if response, err := http.Request("http://127.0.0.1:10000/v1/test", net_http.MethodPost, nil, "", 3, "", ""); err != nil {
+	if response, err := http.Request("http://127.0.0.1:10000/v1/test", net_http.MethodPost, nil, "", 3, "", "", nil); err != nil {
 		t.Fatal(err)
 	} else if response.StatusCode != net_http.StatusOK {
 		t.Fatalf("invalid StatusCode - (%d)", response.StatusCode)
@@ -76,7 +76,7 @@ func TestMain3(t *testing.T) {
 		t.Fatalf("invalid Body - (%s)", response.Body)
 	}
 
-	if response, err := http.Request("http://127.0.0.1:10000/v1/test/id-01", net_http.MethodDelete, nil, "", 3, "", ""); err != nil {
+	if response, err := http.Request("http://127.0.0.1:10000/v1/test/id-01", net_http.MethodDelete, nil, "", 3, "", "", nil); err != nil {
 		t.Fatal(err)
 	} else if response.StatusCode != net_http.StatusNoContent {
 		t.Fatalf("invalid StatusCode - (%d)", response.StatusCode)

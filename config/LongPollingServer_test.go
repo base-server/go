@@ -16,11 +16,11 @@ func TestLongPollingServer(t *testing.T) {
 		t.Fatal("invalid -", longPollingServerConfig.Address)
 	}
 
-	if longPollingServerConfig.Timeout != 3600 {
-		t.Fatal("invalid -", longPollingServerConfig.Timeout)
+	if longPollingServerConfig.TimeoutSeconds != 3600 {
+		t.Fatal("invalid -", longPollingServerConfig.TimeoutSeconds)
 	}
 
-	if longPollingServerConfig.ShutdownTimeout != 10 {
+	if longPollingServerConfig.ShutdownTimeout != "10s" {
 		t.Fatal("invalid -", longPollingServerConfig.ShutdownTimeout)
 	}
 

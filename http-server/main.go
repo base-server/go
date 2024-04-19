@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/base-server/go/config"
 	"github.com/base-server/go/http-server/handler"
@@ -72,11 +73,11 @@ func (this *Main) setSwaggerInfo() {
 }
 
 func (this *Main) setHandler() {
-	this.server.AddPathPrefixHandler(this.httpServerConfig.SwaggerUri, httpSwagger.WrapHandler)
+	this.server.RegisterPathPrefixHandler(this.httpServerConfig.SwaggerUri, httpSwagger.WrapHandler)
 
-	this.server.AddHandler("/v1/test/{id:[a-z,A-Z][a-z,A-Z,0-9,--,_,.]+}", net_http.MethodGet, handler.Get)
-	this.server.AddHandler("/v1/test", net_http.MethodPost, handler.Post)
-	this.server.AddHandler("/v1/test/{id:[a-z,A-Z][a-z,A-Z,0-9,--,_,.]+}", net_http.MethodDelete, handler.Delete)
+	this.server.RegisterHandlerFunc("/v1/test/{id:[a-z,A-Z][a-z,A-Z,0-9,--,_,.]+}", net_http.MethodGet, handler.Get)
+	this.server.RegisterHandlerFunc("/v1/test", net_http.MethodPost, handler.Post)
+	this.server.RegisterHandlerFunc("/v1/test/{id:[a-z,A-Z][a-z,A-Z,0-9,--,_,.]+}", net_http.MethodDelete, handler.Delete)
 }
 
 func (this *Main) startServer() error {
@@ -85,7 +86,12 @@ func (this *Main) startServer() error {
 }
 
 func (this *Main) stopServer() error {
-	return this.server.Stop(this.httpServerConfig.ShutdownTimeout)
+	shutdownTimeout := this.httpServerConfig.ShutdownTimeout
+	if duration, err := time.ParseDuration(shutdownTimeout); err != nil {
+		return err
+	} else {
+		return this.server.Stop(duration)
+	}
 }
 
 func (this *Main) Run() error {

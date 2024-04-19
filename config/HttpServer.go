@@ -5,7 +5,7 @@ type HttpServer struct {
 	SwaggerUri     string `json:"swagger_uri"`
 
 	ServerAddress   string `json:"server_address"`
-	ShutdownTimeout uint64 `json:"shutdownTimeout"`
+	ShutdownTimeout string `json:"shutdownTimeout"`
 
 	Log struct {
 		Level  string `json:"level"`

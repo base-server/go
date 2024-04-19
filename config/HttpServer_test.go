@@ -24,7 +24,7 @@ func TestHttpServer(t *testing.T) {
 		t.Fatal("invalid -", httpServerConfig.ServerAddress)
 	}
 
-	if httpServerConfig.ShutdownTimeout != 10 {
+	if httpServerConfig.ShutdownTimeout != "10s" {
 		t.Fatal("invalid -", httpServerConfig.ShutdownTimeout)
 	}
 
