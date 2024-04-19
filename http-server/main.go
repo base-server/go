@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/base-server/go/config"
 	"github.com/base-server/go/http-server/handler"
@@ -85,7 +86,12 @@ func (this *Main) startServer() error {
 }
 
 func (this *Main) stopServer() error {
-	return this.server.Stop(this.httpServerConfig.ShutdownTimeout)
+	shutdownTimeout := this.httpServerConfig.ShutdownTimeout
+	if duration, err := time.ParseDuration(shutdownTimeout); err != nil {
+		return err
+	} else {
+		return this.server.Stop(duration)
+	}
 }
 
 func (this *Main) Run() error {

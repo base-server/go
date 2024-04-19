@@ -1,13 +1,11 @@
 package config
 
-import "time"
-
 type HttpServer struct {
 	SwaggerAddress string `json:"swagger_address"`
 	SwaggerUri     string `json:"swagger_uri"`
 
-	ServerAddress   string        `json:"server_address"`
-	ShutdownTimeout time.Duration `json:"shutdownTimeout"`
+	ServerAddress   string `json:"server_address"`
+	ShutdownTimeout string `json:"shutdownTimeout"`
 
 	Log struct {
 		Level  string `json:"level"`

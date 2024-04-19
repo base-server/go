@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/base-server/go/config"
 	"github.com/base-server/go/long-polling-server/log"
@@ -61,7 +62,7 @@ func (this *Main) setConfig() error {
 func (this *Main) startServer() error {
 	serverInfo := long_polling.ServerInfo{
 		Address:                        this.longPollingServerConfig.Address,
-		Timeout:                        this.longPollingServerConfig.Timeout,
+		Timeout:                        this.longPollingServerConfig.TimeoutSeconds,
 		SubscriptionURI:                this.longPollingServerConfig.SubscriptionURI,
 		HandlerToRunBeforeSubscription: func(w http.ResponseWriter, r *http.Request) bool { return true },
 		PublishURI:                     this.longPollingServerConfig.PublishURI,
@@ -77,7 +78,12 @@ func (this *Main) startServer() error {
 }
 
 func (this *Main) stopServer() error {
-	return this.server.Stop(this.longPollingServerConfig.ShutdownTimeout)
+	shutdownTimeout := this.longPollingServerConfig.ShutdownTimeout
+	if duration, err := time.ParseDuration(shutdownTimeout); err != nil {
+		return err
+	} else {
+		return this.server.Stop(duration)
+	}
 }
 
 func (this *Main) Run() error {
