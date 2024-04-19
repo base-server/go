@@ -119,11 +119,11 @@ func TestMain3(t *testing.T) {
 		defer wg.Done()
 
 		publish(t, configFile, category, data)
-		timestamp, id := subscription(t, configFile, long_polling.SubscriptionRequest{Category: category, Timeout: 300, SinceTime: 1}, 1, data)
+		timestamp, id := subscription(t, configFile, long_polling.SubscriptionRequest{Category: category, TimeoutSeconds: 300, SinceTime: 1}, 1, data)
 
 		publish(t, configFile, category, data)
 		publish(t, configFile, category, data)
-		subscription(t, configFile, long_polling.SubscriptionRequest{Category: category, Timeout: 300, SinceTime: timestamp, LastID: id}, 2, data)
+		subscription(t, configFile, long_polling.SubscriptionRequest{Category: category, TimeoutSeconds: 300, SinceTime: timestamp, LastID: id}, 2, data)
 	}
 
 	for i := 0; i < 10; i++ {

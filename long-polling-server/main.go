@@ -62,7 +62,7 @@ func (this *Main) setConfig() error {
 func (this *Main) startServer() error {
 	serverInfo := long_polling.ServerInfo{
 		Address:                        this.longPollingServerConfig.Address,
-		Timeout:                        this.longPollingServerConfig.TimeoutSeconds,
+		TimeoutSeconds:                 this.longPollingServerConfig.TimeoutSeconds,
 		SubscriptionURI:                this.longPollingServerConfig.SubscriptionURI,
 		HandlerToRunBeforeSubscription: func(w http.ResponseWriter, r *http.Request) bool { return true },
 		PublishURI:                     this.longPollingServerConfig.PublishURI,
