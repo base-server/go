@@ -10,32 +10,33 @@ on:
     branches: [ "**" ]
 
 jobs:
-
   build:
-    runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        go: [ '1.22.0', '1.22.1', '1.22.2' ]
+        runner: [ 'ubuntu-24.04' ]
+        go: [ '1.22.0', '1.23.1' ]
 
-    name: Go ${{ matrix.go }}
+    runs-on: ${{ matrix.runner }}
+
+    name: ${{ matrix.runner }}, golang:${{ matrix.go }}
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: ${{ matrix.go }}
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+          cache-dependency-path: |
+            go.sum
 
-    - name: Build
-      run: |
-        go install github.com/swaggo/swag/cmd/swag@v1.16.3
-        $(go env GOPATH)/bin/swag init --dir ./http-server --output ./http-server/swagger_docs
-        go build -v ./...
+      - name: Swag init
+        run: |
+          go install github.com/swaggo/swag/cmd/swag@v1.16.3
+          $(go env GOPATH)/bin/swag init --dir ./http-server --output ./http-server/swagger_docs
 
-    - name: Test
-      run: go clean -testcache && go test -coverprofile=coverage.out -cover ./...
+      - name: Test
+        run: go clean -testcache && go test -coverprofile=coverage.out -cover ./...
 
-    - name: Coverage
-      run: go tool cover -html=./coverage.out -o ./coverage.html
+      - name: Coverage
+        run: go tool cover -html=./coverage.out -o ./coverage.html
