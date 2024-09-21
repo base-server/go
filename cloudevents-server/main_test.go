@@ -9,37 +9,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/base-server/go/config"
+	"github.com/base-server/go/common/config"
 	"github.com/common-library/go/event/cloudevents"
 )
 
-func TestMain1(t *testing.T) {
-	os.Args = []string{"test"}
-	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-
-	if err := (&Main{}).Run(); err.Error() != "invalid flag" {
-		t.Errorf("invalid error - (%#v)", err)
-	}
-}
-
-func TestMain2(t *testing.T) {
-	os.Args = []string{"test", "-config-file=invalid"}
-	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-
-	if err := (&Main{}).Run(); err.Error() != "open invalid: no such file or directory" {
-		t.Errorf("invalid error - (%s)", err.Error())
-	}
-}
-
-func TestMain3(t *testing.T) {
-	path, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-	configFile := path + "/../config/CloudEventsServer.config"
+func TestMain(t *testing.T) {
+	const configFile = "../common/config/config.yaml"
 
 	wg := new(sync.WaitGroup)
-
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -51,9 +28,9 @@ func TestMain3(t *testing.T) {
 	}()
 	time.Sleep(200 * time.Millisecond)
 
-	if serverConfig, err := config.Get[config.CloudEventsServer](configFile); err != nil {
+	if err := config.Read(configFile); err != nil {
 		t.Fatal(err)
-	} else if client, err := cloudevents.NewHttp("http://"+serverConfig.Address, nil, nil); err != nil {
+	} else if client, err := cloudevents.NewHttp("http://"+config.Get("cloudEvents.address").(string), nil, nil); err != nil {
 		t.Fatal(err)
 	} else {
 		const eventID = "id 01"
@@ -71,21 +48,21 @@ func TestMain3(t *testing.T) {
 			} else if statusCode, err := result.GetHttpStatusCode(); err != nil {
 				t.Fatal(err)
 			} else if statusCode != http.StatusOK {
-				t.Fatal("invalid -", statusCode)
+				t.Fatal(statusCode)
 			} else {
 				if receiveEvent.ID() != eventID {
-					t.Error("invalid -", receiveEvent.ID())
+					t.Fatal(receiveEvent.ID(), ",", eventID)
 				} else if receiveEvent.Type() != eventType {
-					t.Error("invalid -", receiveEvent.Type())
+					t.Fatal(receiveEvent.Type(), ",", eventType)
 				} else if receiveEvent.Source() != eventSource {
-					t.Error("invalid -", receiveEvent.Source())
+					t.Fatal(receiveEvent.Source(), ",", eventSource)
 				}
 			}
 		}
 	}
 
 	if err := syscall.Kill(os.Getpid(), syscall.SIGTERM); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	wg.Wait()

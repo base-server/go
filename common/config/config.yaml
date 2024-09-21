@@ -1,0 +1,60 @@
+cloudEvents:
+  address: :40000
+  shutdownTimeout: 10s
+
+gRPC:
+  address: :50051
+  log:
+    level: debug
+    output: file
+    file:
+      name: ./grpc-server
+      extensionName: log
+      addDate: false
+    withCallerInfo: true
+
+http:
+  swaggerAddress: 127.0.0.1:10000
+  swaggerUri: /swagger/
+  serverAddress: :10000
+  shutdownTimeout: 10s
+  log:
+    level: debug
+    output: file
+    file:
+      name: ./http-server
+      extensionName: log
+      addDate: false
+    withCallerInfo: true
+
+longPolling:
+  address: :30000
+  timeoutSeconds: 3600
+  shutdownTimeout: 10s
+  subscriptionURI: /subscription
+  publishURI: /publish
+  filePersistorInfo:
+      use: false
+      fileName: ./file-persistor.txt
+      writeBufferSize: 250
+      writeFlushPeriodSeconds: 1
+  log:
+    level: debug
+    output: file
+    file:
+      name: ./long-polling-server
+      extensionName: log
+      addDate: false
+    withCallerInfo: true
+
+socket:
+  address: :20000
+  clientPoolSize: 1024
+  log:
+    level: debug
+    output: file
+    file:
+      name: ./socket-server
+      extensionName: log
+      addDate: false
+    withCallerInfo: true
