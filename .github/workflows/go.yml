@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         runner: [ 'ubuntu-24.04' ]
-        go: [ '1.22.0', '1.23.1' ]
+        go: [ '1.23.0', '1.24.2' ]
 
     runs-on: ${{ matrix.runner }}
 
@@ -32,7 +32,7 @@ jobs:
 
       - name: Swag init
         run: |
-          go install github.com/swaggo/swag/cmd/swag@v1.16.3
+          go install github.com/swaggo/swag/cmd/swag@v1.16.4
           $(go env GOPATH)/bin/swag init --dir ./http-server --output ./http-server/swagger_docs
 
       - name: Test

@@ -24,9 +24,9 @@ func setSwaggerInfo() {
 func setHandler(server *http.Server) {
 	server.RegisterPathPrefixHandler(config.Get("http.swaggerUri").(string), httpSwagger.WrapHandler)
 
-	server.RegisterHandlerFunc("/v1/test/{id:[a-z,A-Z][a-z,A-Z,0-9,--,_,.]+}", net_http.MethodGet, handler.Get)
-	server.RegisterHandlerFunc("/v1/test", net_http.MethodPost, handler.Post)
-	server.RegisterHandlerFunc("/v1/test/{id:[a-z,A-Z][a-z,A-Z,0-9,--,_,.]+}", net_http.MethodDelete, handler.Delete)
+	server.RegisterHandlerFunc("/v1/test/{id:[a-z,A-Z][a-z,A-Z,0-9,--,_,.]+}", handler.Get, net_http.MethodGet)
+	server.RegisterHandlerFunc("/v1/test", handler.Post, net_http.MethodPost)
+	server.RegisterHandlerFunc("/v1/test/{id:[a-z,A-Z][a-z,A-Z,0-9,--,_,.]+}", handler.Delete, net_http.MethodDelete)
 }
 
 func main() {
