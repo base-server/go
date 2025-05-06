@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/base-server/go/http-server/log"
+	"github.com/base-server/go/common/log"
 	"github.com/common-library/go/json"
 	"github.com/gorilla/mux"
 )
@@ -36,14 +36,14 @@ type Test struct {
 // @Router /v1/test/{id} [get]
 // @tags test
 func Get(w http.ResponseWriter, r *http.Request) {
-	log.Server.Debug("handler start", "uri", r.RequestURI, "method", r.Method)
-	defer log.Server.Debug("handler end", "uri", r.RequestURI, "method", r.Method)
+	log.Log.Debug("handler start", "uri", r.RequestURI, "method", r.Method)
+	defer log.Log.Debug("handler end", "uri", r.RequestURI, "method", r.Method)
 
-	log.Server.Debug("header", "header-1", r.Header.Get("header-1"))
+	log.Log.Debug("header", "header-1", r.Header.Get("header-1"))
 
-	log.Server.Debug("path", "id", mux.Vars(r)["id"])
+	log.Log.Debug("path", "id", mux.Vars(r)["id"])
 
-	log.Server.Debug("parameter", "param-1", r.URL.Query().Get("param-1"), "param-2", r.URL.Query().Get("param-2"), "param-3", r.URL.Query().Get("param-3"))
+	log.Log.Debug("parameter", "param-1", r.URL.Query().Get("param-1"), "param-2", r.URL.Query().Get("param-2"), "param-3", r.URL.Query().Get("param-3"))
 
 	if body, err := json.ToString(Test{ID: mux.Vars(r)["id"], Field1: 1, Field2: "value-2"}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

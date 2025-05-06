@@ -9,49 +9,27 @@ import (
 	"testing"
 	"time"
 
-	"github.com/base-server/go/config"
+	"github.com/base-server/go/common/config"
 	"github.com/common-library/go/file"
 	"github.com/common-library/go/grpc"
 	"github.com/common-library/go/grpc/sample"
 )
 
-func TestMain1(t *testing.T) {
-	os.Args = []string{"test"}
-	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+func TestMain(t *testing.T) {
+	const configFile = "../common/config/config.yaml"
 
-	if err := (&Main{}).Run(); err.Error() != "invalid flag" {
+	if err := config.Read(configFile); err != nil {
 		t.Fatal(err)
 	}
-}
 
-func TestMain2(t *testing.T) {
-	os.Args = []string{"test", "-config_file=invalid"}
-	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-
-	if err := (&Main{}).Run(); err.Error() != "open invalid: no such file or directory" {
-		t.Fatal(err)
-	}
-}
-
-func TestMain3(t *testing.T) {
-	path, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-	configFile := path + "/../config/GrpcServer.config"
-
-	grpcServerConfig, err := config.Get[config.GrpcServer](configFile)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer file.Remove(grpcServerConfig.Log.File.Name + "." + grpcServerConfig.Log.File.ExtensionName)
+	defer file.Remove(config.Get("gRPC.log.file.name").(string) + "." + config.Get("gRPC.log.file.extensionName").(string))
 
 	condition := atomic.Bool{}
 	condition.Store(true)
 	go func() {
 		defer condition.Store(false)
 
-		os.Args = []string{"test", "-config_file=" + configFile}
+		os.Args = []string{"test", "-config-file=" + configFile}
 		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 		main()
@@ -59,7 +37,7 @@ func TestMain3(t *testing.T) {
 	time.Sleep(200 * time.Millisecond)
 
 	func() {
-		connection, err := grpc.GetConnection(grpcServerConfig.Address)
+		connection, err := grpc.GetConnection(config.Get("gRPC.address").(string))
 		if err != nil {
 			t.Fatal(err)
 		}

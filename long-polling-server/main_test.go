@@ -11,18 +11,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/base-server/go/config"
+	"github.com/base-server/go/common/config"
 	"github.com/common-library/go/file"
 	long_polling "github.com/common-library/go/long-polling"
 )
 
-func subscription(t *testing.T, configFile string, request long_polling.SubscriptionRequest, count int, data string) (int64, string) {
-	longPollingServerConfig, err := config.Get[config.LongPollingServer](configFile)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	response, err := long_polling.Subscription("http://"+longPollingServerConfig.Address+"/subscription", nil, request, "", "", nil)
+func subscription(t *testing.T, request long_polling.SubscriptionRequest, count int, data string) (int64, string) {
+	response, err := long_polling.Subscription("http://"+config.Get("longPolling.address").(string)+config.Get("longPolling.subscriptionURI").(string), nil, request, "", "", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,14 +43,9 @@ func subscription(t *testing.T, configFile string, request long_polling.Subscrip
 	return response.Events[len(response.Events)-1].Timestamp, response.Events[len(response.Events)-1].ID
 }
 
-func publish(t *testing.T, configFile, category, data string) {
-	longPollingServerConfig, err := config.Get[config.LongPollingServer](configFile)
-	if err != nil {
-		t.Fatal(err)
-	}
-
+func publish(t *testing.T, category, data string) {
 	request := long_polling.PublishRequest{Category: category, Data: data}
-	response, err := long_polling.Publish("http://"+longPollingServerConfig.Address+longPollingServerConfig.PublishURI, 10, nil, request, "", "", nil)
+	response, err := long_polling.Publish("http://"+config.Get("longPolling.address").(string)+config.Get("longPolling.publishURI").(string), 10, nil, request, "", "", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,41 +59,19 @@ func publish(t *testing.T, configFile, category, data string) {
 	}
 }
 
-func TestMain1(t *testing.T) {
-	os.Args = []string{"test"}
-	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+func TestMain(t *testing.T) {
+	const configFile = "../common/config/config.yaml"
 
-	if err := (&Main{}).Run(); err.Error() != "invalid flag" {
+	if err := config.Read(configFile); err != nil {
 		t.Fatal(err)
 	}
-}
 
-func TestMain2(t *testing.T) {
-	os.Args = []string{"test", "-config_file=invalid"}
-	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-
-	if err := (&Main{}).Run(); err.Error() != "open invalid: no such file or directory" {
-		t.Fatal(err)
-	}
-}
-
-func TestMain3(t *testing.T) {
-	path, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-	configFile := path + "/../config/LongPollingServer.config"
-
-	if longPollingServerConfig, err := config.Get[config.LongPollingServer](configFile); err != nil {
-		t.Fatal(err)
-	} else {
-		defer file.Remove(longPollingServerConfig.Log.File.Name + "." + longPollingServerConfig.Log.File.ExtensionName)
-	}
+	defer file.Remove(config.Get("longPolling.log.file.name").(string) + "." + config.Get("longPolling.log.file.extensionName").(string))
 
 	condition := atomic.Bool{}
 	condition.Store(false)
 	go func() {
-		os.Args = []string{"test", "-config_file=" + configFile}
+		os.Args = []string{"test", "-config-file=" + configFile}
 		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 		condition.Store(true)
@@ -118,12 +86,12 @@ func TestMain3(t *testing.T) {
 		println(category, data)
 		defer wg.Done()
 
-		publish(t, configFile, category, data)
-		timestamp, id := subscription(t, configFile, long_polling.SubscriptionRequest{Category: category, TimeoutSeconds: 300, SinceTime: 1}, 1, data)
+		publish(t, category, data)
+		timestamp, id := subscription(t, long_polling.SubscriptionRequest{Category: category, TimeoutSeconds: 300, SinceTime: 1}, 1, data)
 
-		publish(t, configFile, category, data)
-		publish(t, configFile, category, data)
-		subscription(t, configFile, long_polling.SubscriptionRequest{Category: category, TimeoutSeconds: 300, SinceTime: timestamp, LastID: id}, 2, data)
+		publish(t, category, data)
+		publish(t, category, data)
+		subscription(t, long_polling.SubscriptionRequest{Category: category, TimeoutSeconds: 300, SinceTime: timestamp, LastID: id}, 2, data)
 	}
 
 	for i := 0; i < 10; i++ {
