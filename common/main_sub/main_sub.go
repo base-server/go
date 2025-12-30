@@ -28,21 +28,23 @@ type Main struct {
 	serverKind ServerKind
 }
 
-func (this *Main) initialize(serverKind ServerKind) error {
-	if err := this.parseFlag(); err != nil {
+func (m *Main) initialize(serverKind ServerKind) error {
+	if err := m.parseFlag(); err != nil {
 		return err
 	} else if err := config.Read(flags.Get[string]("config-file")); err != nil {
 		return err
-	} else {
-		if serverKind != CloudEvents {
-			log.Initialize(string(serverKind))
-		}
-
-		return nil
 	}
+
+	if serverKind != CloudEvents {
+		log.Initialize(string(serverKind))
+	}
+
+	m.serverKind = serverKind
+
+	return nil
 }
 
-func (this *Main) parseFlag() error {
+func (m *Main) parseFlag() error {
 	flagInfos := []flags.FlagInfo{
 		{FlagName: "config-file", Usage: "config/config.yaml", DefaultValue: string("")},
 	}
@@ -58,10 +60,10 @@ func (this *Main) parseFlag() error {
 	}
 }
 
-func (this *Main) RunWithKlog(serverKind ServerKind, start func() error, stop func() error) error {
+func (m *Main) RunWithKlog(serverKind ServerKind, start func() error, stop func() error) error {
 	defer klog.Flush()
 
-	if err := this.initialize(serverKind); err != nil {
+	if err := m.initialize(serverKind); err != nil {
 		return err
 	} else if err := start(); err != nil {
 		return err
@@ -74,10 +76,10 @@ func (this *Main) RunWithKlog(serverKind ServerKind, start func() error, stop fu
 	return stop()
 }
 
-func (this *Main) RunWithSlog(serverKind ServerKind, start func(*slog.Log) error, stop func(*slog.Log) error) error {
+func (m *Main) RunWithSlog(serverKind ServerKind, start func(*slog.Log) error, stop func(*slog.Log) error) error {
 	defer log.Log.Flush()
 
-	if err := this.initialize(serverKind); err != nil {
+	if err := m.initialize(serverKind); err != nil {
 		return err
 	} else if err := start(&log.Log); err != nil {
 		return err

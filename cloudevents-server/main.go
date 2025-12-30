@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-
 	server := cloudevents.Server{}
 
 	start := func() error {

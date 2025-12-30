@@ -19,11 +19,10 @@ import (
 func TestMain(t *testing.T) {
 	const configFile = "../common/config/config.yaml"
 
+	// Load config file first
 	if err := config.Read(configFile); err != nil {
 		t.Fatal(err)
 	}
-
-	defer file.Remove(config.Get("socket.log.file.name").(string) + "." + config.Get("socket.log.file.extensionName").(string))
 
 	sleep := atomic.Bool{}
 	sleep.Store(true)
@@ -41,6 +40,7 @@ func TestMain(t *testing.T) {
 	for sleep.Load() {
 		time.Sleep(100 * time.Millisecond)
 	}
+	time.Sleep(500 * time.Millisecond)
 
 	clientJob := func(wg *sync.WaitGroup) {
 		defer wg.Done()
@@ -49,24 +49,30 @@ func TestMain(t *testing.T) {
 		defer client.Close()
 
 		if err := client.Connect("tcp", config.Get("socket.address").(string)); err != nil {
-			t.Fatal(err)
+			t.Error(err)
+			return
 		}
 
 		if readData, err := client.Read(1024); err != nil {
-			t.Fatal(err)
+			t.Error(err)
+			return
 		} else if readData != "greeting" {
-			t.Fatalf("invalid data - (%s)", readData)
+			t.Errorf("invalid data - (%s)", readData)
+			return
 		}
 
 		writeData := "test-" + strconv.Itoa(rand.IntN(1000))
 		if _, err := client.Write(writeData); err != nil {
-			t.Fatal(err)
+			t.Error(err)
+			return
 		}
 
 		if readData, err := client.Read(1024); err != nil {
-			t.Fatal(err)
+			t.Error(err)
+			return
 		} else if readData != "[response] "+writeData {
-			t.Fatalf("invalid data - (%s)", readData)
+			t.Errorf("invalid data - (%s)", readData)
+			return
 		}
 	}
 
@@ -84,4 +90,6 @@ func TestMain(t *testing.T) {
 	for condition.Load() {
 		time.Sleep(100 * time.Millisecond)
 	}
+
+	file.Remove(config.Get("socket.log.file.name").(string) + "." + config.Get("socket.log.file.extensionName").(string))
 }
