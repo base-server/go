@@ -1,5 +1,15 @@
 # Base Server for Go
 
+[![CI](https://github.com/base-server/go/workflows/CI/badge.svg)](https://github.com/base-server/go/actions)
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/heaven-chp/e51e24bb9338aae48b4465ecd2cbd620/raw/coverage.json)](https://github.com/base-server/go/actions)
+[![Go Report Card](https://goreportcard.com/badge/github.com/base-server/go)](https://goreportcard.com/report/github.com/base-server/go)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/base-server/go?logo=go)](https://github.com/base-server/go)
+[![Reference](https://pkg.go.dev/badge/github.com/base-server/go.svg)](https://pkg.go.dev/github.com/base-server/go)
+[![License](https://img.shields.io/github/license/base-server/go)](https://github.com/base-server/go/blob/main/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/base-server/go)](https://github.com/base-server/go/stargazers)
+
+<br/>
+
 ## Features
  - cloudevents
  - grpc
