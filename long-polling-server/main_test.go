@@ -62,11 +62,10 @@ func publish(t *testing.T, category, data string) {
 func TestMain(t *testing.T) {
 	const configFile = "../common/config/config.yaml"
 
+	// Load config file first
 	if err := config.Read(configFile); err != nil {
 		t.Fatal(err)
 	}
-
-	defer file.Remove(config.Get("longPolling.log.file.name").(string) + "." + config.Get("longPolling.log.file.extensionName").(string))
 
 	condition := atomic.Bool{}
 	condition.Store(false)
@@ -78,7 +77,7 @@ func TestMain(t *testing.T) {
 		main()
 		condition.Store(false)
 	}()
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 
 	wg := new(sync.WaitGroup)
 
@@ -108,4 +107,6 @@ func TestMain(t *testing.T) {
 	for condition.Load() {
 		time.Sleep(100 * time.Millisecond)
 	}
+
+	file.Remove(config.Get("longPolling.log.file.name").(string) + "." + config.Get("longPolling.log.file.extensionName").(string))
 }

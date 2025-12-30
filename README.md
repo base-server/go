@@ -36,7 +36,7 @@
      - `./grpc-server.log`
  - http
    - build
-     - `go install github.com/swaggo/swag/cmd/swag@v1.16.3`
+     - `go install github.com/swaggo/swag/cmd/swag@v1.16.6`
      - `$(go env GOPATH)/bin/swag init --dir ./http-server --output ./http-server/swagger_docs`
      - `go build -o ./bin/http-server ./http-server/`
    - run

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/base-server/go/common/config"
@@ -32,7 +31,7 @@ func main() {
 				if writeLen, err := client.Write(writeData); err != nil {
 					return err
 				} else if writeLen != len(writeData) {
-					return errors.New(fmt.Sprintf("invalid write - (%d)(%d)", writeLen, len(writeData)))
+					return fmt.Errorf("invalid write - (%d)(%d)", writeLen, len(writeData))
 				} else {
 					log.Debug("write", "data", writeData)
 

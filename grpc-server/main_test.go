@@ -18,11 +18,10 @@ import (
 func TestMain(t *testing.T) {
 	const configFile = "../common/config/config.yaml"
 
+	// Load config file first
 	if err := config.Read(configFile); err != nil {
 		t.Fatal(err)
 	}
-
-	defer file.Remove(config.Get("gRPC.log.file.name").(string) + "." + config.Get("gRPC.log.file.extensionName").(string))
 
 	condition := atomic.Bool{}
 	condition.Store(true)
@@ -34,7 +33,7 @@ func TestMain(t *testing.T) {
 
 		main()
 	}()
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 
 	func() {
 		connection, err := grpc.GetConnection(config.Get("gRPC.address").(string))
@@ -62,4 +61,6 @@ func TestMain(t *testing.T) {
 	for condition.Load() {
 		time.Sleep(100 * time.Millisecond)
 	}
+
+	file.Remove(config.Get("gRPC.log.file.name").(string) + "." + config.Get("gRPC.log.file.extensionName").(string))
 }
