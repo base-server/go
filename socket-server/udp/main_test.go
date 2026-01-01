@@ -13,11 +13,11 @@ import (
 
 	"github.com/base-server/go/common/config"
 	"github.com/common-library/go/file"
-	"github.com/common-library/go/socket"
+	"github.com/common-library/go/socket/udp"
 )
 
 func TestMain(t *testing.T) {
-	const configFile = "../common/config/config.yaml"
+	const configFile = "../../common/config/config.yaml"
 
 	// Load config file first
 	if err := config.Read(configFile); err != nil {
@@ -45,33 +45,28 @@ func TestMain(t *testing.T) {
 	clientJob := func(wg *sync.WaitGroup) {
 		defer wg.Done()
 
-		client := socket.Client{}
+		client := udp.Client{}
 		defer client.Close()
 
-		if err := client.Connect("tcp", config.Get("socket.address").(string)); err != nil {
+		// Connect to UDP server
+		if err := client.Connect("udp", config.Get("socket.udp.address").(string)); err != nil {
 			t.Error(err)
 			return
 		}
 
-		if readData, err := client.Read(1024); err != nil {
-			t.Error(err)
-			return
-		} else if readData != "greeting" {
-			t.Errorf("invalid data - (%s)", readData)
-			return
-		}
-
+		// Send test data
 		writeData := "test-" + strconv.Itoa(rand.IntN(1000))
-		if _, err := client.Write(writeData); err != nil {
+		if _, err := client.Send([]byte(writeData)); err != nil {
 			t.Error(err)
 			return
 		}
 
-		if readData, err := client.Read(1024); err != nil {
+		// Receive response with timeout
+		if readData, _, err := client.Receive(1024, 5*time.Second); err != nil {
 			t.Error(err)
 			return
-		} else if readData != "[response] "+writeData {
-			t.Errorf("invalid data - (%s)", readData)
+		} else if string(readData) != "[response] "+writeData {
+			t.Errorf("invalid data - got: (%s), want: (%s)", string(readData), "[response] "+writeData)
 			return
 		}
 	}

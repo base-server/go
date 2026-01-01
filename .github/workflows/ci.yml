@@ -52,11 +52,6 @@ jobs:
             ${{ runner.os }}-go-${{ matrix.go }}-
             ${{ runner.os }}-go-
 
-      - name: Swag init
-        run: |
-          go install github.com/swaggo/swag/cmd/swag@v1.16.6
-          $(go env GOPATH)/bin/swag init --dir ./http-server --output ./http-server/swagger_docs
-
       - name: Install Tools
         run: |
           go install honnef.co/go/tools/cmd/staticcheck@latest

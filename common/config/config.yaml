@@ -14,9 +14,14 @@ gRPC:
     withCallerInfo: true
 
 http:
+  echo:
+    address: :10000
+  gin:
+    address: :10001
+  mux:
+    address: :10002
   swaggerAddress: 127.0.0.1:10000
   swaggerUri: /swagger/
-  serverAddress: :10000
   shutdownTimeout: 10s
   log:
     level: debug
@@ -48,7 +53,10 @@ longPolling:
     withCallerInfo: true
 
 socket:
-  address: :20000
+  tcp:
+    address: :20000
+  udp:
+    address: :20001
   clientPoolSize: 1024
   log:
     level: debug
