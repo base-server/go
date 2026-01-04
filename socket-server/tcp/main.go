@@ -1,20 +1,19 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/base-server/go/common/config"
 	"github.com/base-server/go/common/main_sub"
 	"github.com/common-library/go/log/slog"
-	"github.com/common-library/go/socket"
+	"github.com/common-library/go/socket/tcp"
 )
 
 func main() {
-	server := socket.Server{}
+	server := tcp.Server{}
 
 	start := func(log *slog.Log) error {
-		acceptSuccessFunc := func(client socket.Client) {
+		acceptSuccessFunc := func(client tcp.Client) {
 			log.Debug("start", "network", client.GetRemoteAddr().Network(), "address", client.GetRemoteAddr().String())
 			log.Debug("end", "network", client.GetRemoteAddr().Network(), "address", client.GetRemoteAddr().String())
 
@@ -32,7 +31,7 @@ func main() {
 				if writeLen, err := client.Write(writeData); err != nil {
 					return err
 				} else if writeLen != len(writeData) {
-					return errors.New(fmt.Sprintf("invalid write - (%d)(%d)", writeLen, len(writeData)))
+					return fmt.Errorf("invalid write - (%d)(%d)", writeLen, len(writeData))
 				} else {
 					log.Debug("write", "data", writeData)
 
@@ -58,7 +57,7 @@ func main() {
 			log.Error(err.Error())
 		}
 
-		return server.Start("tcp", config.Get("socket.address").(string), config.Get("socket.clientPoolSize").(int), acceptSuccessFunc, acceptFailureFunc)
+		return server.Start("tcp", config.Get("socket.tcp.address").(string), config.Get("socket.clientPoolSize").(int), acceptSuccessFunc, acceptFailureFunc)
 	}
 
 	stop := func(log *slog.Log) error {

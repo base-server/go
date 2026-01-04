@@ -1,11 +1,21 @@
 # Base Server for Go
 
+[![CI](https://github.com/base-server/go/workflows/CI/badge.svg)](https://github.com/base-server/go/actions)
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/heaven-chp/e51e24bb9338aae48b4465ecd2cbd620/raw/coverage.json)](https://github.com/base-server/go/actions)
+[![Go Report Card](https://goreportcard.com/badge/github.com/base-server/go)](https://goreportcard.com/report/github.com/base-server/go)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/base-server/go?logo=go)](https://github.com/base-server/go)
+[![Reference](https://pkg.go.dev/badge/github.com/base-server/go.svg)](https://pkg.go.dev/github.com/base-server/go)
+[![License](https://img.shields.io/github/license/base-server/go)](https://github.com/base-server/go/blob/main/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/base-server/go)](https://github.com/base-server/go/stargazers)
+
+<br/>
+
 ## Features
  - cloudevents
  - grpc
- - http
+ - http (echo, gin, mux)
  - long polling
- - socket
+ - socket (tcp, udp)
 
 <br/>
 
@@ -26,37 +36,58 @@
    - build
      - `go build -o ./bin/cloudevents-server ./cloudevents-server/`
    - run
-     - `./bin/cloudevents-server -config-file ./config/CloudEventsServer.config`
+     - `./bin/cloudevents-server -config-file ./common/config/config.yaml`
  - grpc
    - build
      - `go build -o ./bin/grpc-server ./grpc-server/`
    - run
-     - `./bin/grpc-server -config_file ./config/GrpcServer.config`
+     - `./bin/grpc-server -config_file ./common/config/config.yaml`
    - log
      - `./grpc-server.log`
  - http
-   - build
-     - `go install github.com/swaggo/swag/cmd/swag@v1.16.3`
-     - `$(go env GOPATH)/bin/swag init --dir ./http-server --output ./http-server/swagger_docs`
-     - `go build -o ./bin/http-server ./http-server/`
-   - run
-     - `./bin/http-server -config_file ./config/HttpServer.config`
-   - log
-     - `./http-server.log`
+   - echo
+     - build
+       - `go build -o ./bin/http-server-echo ./http-server/echo/`
+     - run
+       - `./bin/http-server-echo -config_file ./common/config/config.yaml`
+     - log
+       - `./http-server.log`
+   - gin
+     - build
+       - `go build -o ./bin/http-server-gin ./http-server/gin/`
+     - run
+       - `./bin/http-server-gin -config_file ./common/config/config.yaml`
+     - log
+       - `./http-server.log`
+   - mux
+     - build
+       - `go build -o ./bin/http-server-mux ./http-server/mux/`
+     - run
+       - `./bin/http-server-mux -config_file ./common/config/config.yaml`
+     - log
+       - `./http-server.log`
  - long-polling
    - build
      - `go build -o ./bin/long-polling-server ./long-polling-server/`
    - run
-     - `./bin/long-polling-server -config_file ./config/LongPollingServer.config`
+     - `./bin/long-polling-server -config_file ./common/config/config.yaml`
    - log
      - `./long-polling-server.log`
  - socket
-   - build
-     - `go build -o ./bin/socket-server ./socket-server/`
-   - run
-     - `./bin/socket-server -config_file ./config/SocketServer.config`
-   - log
-     - `./socket-server.log`
+   - tcp
+     - build
+       - `go build -o ./bin/socket-server-tcp ./socket-server/tcp/`
+     - run
+       - `./bin/socket-server-tcp -config_file ./common/config/config.yaml`
+     - log
+       - `./socket-server.log`
+   - udp
+     - build
+       - `go build -o ./bin/socket-server-udp ./socket-server/udp/`
+     - run
+       - `./bin/socket-server-udp -config_file ./common/config/config.yaml`
+     - log
+       - `./socket-server.log`
 
 <br/>
 

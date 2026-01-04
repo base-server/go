@@ -25,9 +25,11 @@ func TestGet(t *testing.T) {
 		"gRPC.log.file.addDate":       false,
 		"gRPC.log.withCallerInfo":     true,
 
+		"http.echo.address":           ":10000",
+		"http.gin.address":            ":10001",
+		"http.mux.address":            ":10002",
 		"http.swaggerAddress":         "127.0.0.1:10000",
 		"http.swaggerUri":             "/swagger/",
-		"http.serverAddress":          ":10000",
 		"http.shutdownTimeout":        "10s",
 		"http.log.level":              "debug",
 		"http.log.output":             "file",
@@ -52,7 +54,8 @@ func TestGet(t *testing.T) {
 		"longPolling.log.file.addDate":                          false,
 		"longPolling.log.withCallerInfo":                        true,
 
-		"socket.address":                ":20000",
+		"socket.tcp.address":            ":20000",
+		"socket.udp.address":            ":20001",
 		"socket.clientPoolSize":         1024,
 		"socket.log.level":              "debug",
 		"socket.log.output":             "file",
