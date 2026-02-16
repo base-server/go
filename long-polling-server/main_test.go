@@ -93,7 +93,7 @@ func TestMain(t *testing.T) {
 		subscription(t, long_polling.SubscriptionRequest{Category: category, TimeoutSeconds: 300, SinceTime: timestamp, LastID: id}, 2, data)
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		wg.Add(1)
 		go clientJob("category-"+strconv.Itoa(i), "data-"+strconv.Itoa(i))
 	}
