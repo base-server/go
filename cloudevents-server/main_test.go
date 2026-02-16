@@ -17,15 +17,13 @@ func TestMain(t *testing.T) {
 	const configFile = "../common/config/config.yaml"
 
 	wg := new(sync.WaitGroup)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 
 		os.Args = []string{"test", "-config-file=" + configFile}
 		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 		main()
-	}()
+	})
 	time.Sleep(200 * time.Millisecond)
 
 	if err := config.Read(configFile); err != nil {
@@ -42,7 +40,7 @@ func TestMain(t *testing.T) {
 		sendEvent.SetType(eventType)
 		sendEvent.SetSource(eventSource)
 
-		for i := 0; i < 100; i++ {
+		for range 100 {
 			if receiveEvent, result := client.Request(sendEvent); result.IsUndelivered() {
 				t.Fatal(result.Error())
 			} else if statusCode, err := result.GetHttpStatusCode(); err != nil {
